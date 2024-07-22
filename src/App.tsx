@@ -37,8 +37,9 @@ import useHotkeyFunc from "./hook/useHotkeyFunc";
 import useWorkHistory from "./hook/useWorkHistory";
 import useI18n from "./hook/usei18n";
 import { initialStageDataList } from "./redux/initilaStageDataList";
-import { useQuery, gql } from "@apollo/client";
+import { gql, useApolloClient } from "@apollo/client";
 import LoadingModal from "./loading";
+import { TabKind } from "./tab/Tab";
 
 const GET_CART = gql`
   query topCart {
@@ -48,6 +49,11 @@ const GET_CART = gql`
       product_name
       product_code
       image
+      productParts {
+        image
+        uuid
+        priority
+      }
     }
   }
 `;
@@ -63,18 +69,18 @@ export type FileData = Record<string, FileKind>;
 function App() {
   const [past, setPast] = useState<StageData[][]>([]);
   const [future, setFuture] = useState<StageData[][]>([]);
-  const { loading, error, data } = useQuery(GET_CART);
+  const [isLoading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+  const client = useApolloClient();
 
-  if (loading) return <LoadingModal show={loading} />;
-
-  const initialize = () => {
-    const cart = data.data.map((o, i) => ({
-      id: o.product_code,
-      active: i == 0,
-      preview: o.image,
-    }));
-    return cart[0];
-  };
+  // const initialize = () => {
+  //   const cart = data.data.map((o, i) => ({
+  //     id: o.product_code,
+  //     active: i == 0,
+  //     preview: o.image,
+  //   }));
+  //   return {id:"",active:true,preview:""};
+  // };
 
   const {
     goToFuture,
@@ -86,10 +92,9 @@ function App() {
   const transformer = useTransformer();
   const { selectedItems, onSelectItem, setSelectedItems, clearSelection } =
     useSelection(transformer);
-  const { tabList, onClickTab, onCreateTab, onDeleteTab } = useTab(
+  const { tabList, onClickTab, onCreateTab, onDeleteTab, onInitTabs } = useTab(
     transformer,
     clearHistory,
-    initialize,
   );
   const { stageData } = useItem();
   const { initializeFileDataList, updateFileData } = useStageDataList();
@@ -401,17 +406,70 @@ function App() {
   );
 
   useEffect(() => {
+    if (!data) return;
+
+    const productList = data.data.topCart.products.map((o, i) => {
+      return {
+        id: o.product_code,
+        preview: o.image,
+        active: i == 0,
+      };
+      // return {
+      //   id: o.uuid,
+      //   data: [
+      //     {
+      //       id: o.product_code,
+      //       attrs: {
+      //         name: "label-target",
+      //         "data-item-type": "image",
+      //         x: 372,
+      //         y: 0,
+      //         width: 862,
+      //         height: 862,
+      //         src: o.image,
+      //         zIndex: 0,
+      //         brightness: 0,
+      //         draggable: false,
+      //         visible: false,
+      //         updatedAt: Date.now(),
+      //       },
+      //       className: "sample-image",
+      //       children: [],
+      //     },
+      //   ],
+      // };
+    }) as TabKind[];
+
     window.addEventListener("beforeunload", (e) => {
       e.preventDefault();
       e.returnValue = "";
     });
+
     // onCreateTab(undefined, initialStageDataList[0] as StageDataListItem);
+    onInitTabs(productList);
     initializeFileDataList(initialStageDataList);
     stage.stageRef.current.setPosition({
       x: Math.max(Math.ceil(stage.stageRef.current.width() - 1672) / 2, 0),
       y: Math.max(Math.ceil(stage.stageRef.current.height() - 760) / 2, 0),
     });
     stage.stageRef.current.batchDraw();
+  }, [data]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const { data } = await client.query({
+          query: GET_CART,
+        });
+        setData(data);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -423,6 +481,8 @@ function App() {
     }
     recordPast(stageData);
   }, [stageData]);
+
+  if(isLoading) return <LoadingModal show={true} />;
 
   return (
     <>

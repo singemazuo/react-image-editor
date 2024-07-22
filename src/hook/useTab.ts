@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { StageDataListItem } from "../redux/stageDataList";
-import { TabKind } from "../tab/Tab";
+import Tab, { TabKind } from "../tab/Tab";
 import useLocalStorage from "./useLocalStorage";
 import useSelection from "./useSelection";
 import useStageDataList from "./useStageDataList";
@@ -12,9 +12,8 @@ export const TAB_ID = "tabId";
 const useTab = (
   transformer: ReturnType<typeof useTransformer>,
   clearHistory: ReturnType<typeof useWorkHistory>["clearHistory"],
-  initialize?: () => TabKind,
 ) => {
-  const [tabList, setTabList] = useState<TabKind[]>([initialize()]);
+  const [tabList, setTabList] = useState<TabKind[]>([]);
   const { createFileData, removeFileData, changeStageData } =
     useStageDataList();
   const { clearSelection } = useSelection(transformer);
@@ -51,6 +50,10 @@ const useTab = (
     );
     setValue(TAB_ID, { id: tabId });
     clearHistory();
+  };
+
+  const onInitTabs = (tabs:TabKind[]) => {
+    setTabList(tabs);
   };
 
   const onCreateTab = (
@@ -119,6 +122,7 @@ const useTab = (
     tabList,
     onClickTab,
     onCreateTab,
+    onInitTabs,
     onDeleteTab,
     moveTab,
   };
