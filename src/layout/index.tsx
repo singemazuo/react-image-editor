@@ -15,55 +15,83 @@ type LayoutProps = {
   children: React.ReactNode;
 };
 
-const Layout: React.FC<LayoutProps> = ({ header, navBar, settingBar, children, footer }) => (
-  <Container fluid className={[sizeStyles.height100, overflowStyles.hide].join(" ")}>
+const Layout: React.FC<LayoutProps> = ({
+  header,
+  navBar,
+  settingBar,
+  children,
+  footer,
+}) => (
+  <Container
+    fluid
+    className={[sizeStyles.height100, overflowStyles.hide].join(" ")}
+  >
+    {header && (
+      <Row
+        xs={12}
+        className={[
+          sizeStyles.height5,
+          positionStyles.relative,
+          positionStyles.zIndex1,
+        ].join(" ")}
+      >
+        {header}
+      </Row>
+    )}
     <Row
       xs={12}
       className={[
-        sizeStyles.height5,
+        sizeStyles.height90,
         positionStyles.relative,
         positionStyles.zIndex1,
-        spaceStyles.mt1rem,
-      ].join(" ")}>
-      {header}
-    </Row>
-    <Row
-      xs={12}
-      className={[sizeStyles.height90, positionStyles.relative, positionStyles.zIndex1].join(" ")}>
+      ].join(" ")}
+    >
       <Col
-        xs="auto"
+        xs="4"
         className={[
           colorStyles.darkTheme,
           sizeStyles.widthLogo,
           sizeStyles.height100,
           alignStyles.fromTopCenter,
-        ].join(" ")}>
-        {navBar}
+        ].join(" ")}
+      >
+        {settingBar}
       </Col>
-      <Col className={["h-100", positionStyles.relative, colorStyles.greyTheme].join(" ")}>
+      <Col
+        className={[
+          "h-100",
+          positionStyles.relative,
+          colorStyles.greyTheme,
+        ].join(" ")}
+      >
         {children}
       </Col>
       <Col
-        xs={2}
+        xs="auto"
         className={[
           colorStyles.darkTheme,
           sizeStyles.height100,
           positionStyles.relative,
           positionStyles.zIndex1,
-        ].join(" ")}>
-        {settingBar}
+        ].join(" ")}
+      >
+        {navBar}
       </Col>
     </Row>
-    <Row
-      xs={12}
-      className={[
-        colorStyles.darkTheme,
-        sizeStyles.height5,
-        positionStyles.relative,
-        positionStyles.zIndex1,
-      ].join(" ")}>
-      {footer}
-    </Row>
+    {footer && (
+      <Row
+        xs={12}
+        className={[
+          colorStyles.darkTheme,
+          sizeStyles.height10,
+          alignStyles.fromStartCenter,
+          positionStyles.relative,
+          positionStyles.zIndex1,
+        ].join(" ")}
+      >
+        {footer}
+      </Row>
+    )}
   </Container>
 );
 

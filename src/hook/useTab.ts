@@ -12,9 +12,11 @@ export const TAB_ID = "tabId";
 const useTab = (
   transformer: ReturnType<typeof useTransformer>,
   clearHistory: ReturnType<typeof useWorkHistory>["clearHistory"],
+  initialize?: () => TabKind,
 ) => {
-  const [tabList, setTabList] = useState<TabKind[]>([]);
-  const { createFileData, removeFileData, changeStageData } = useStageDataList();
+  const [tabList, setTabList] = useState<TabKind[]>([initialize()]);
+  const { createFileData, removeFileData, changeStageData } =
+    useStageDataList();
   const { clearSelection } = useSelection(transformer);
   const { setValue } = useLocalStorage();
 
@@ -28,6 +30,7 @@ const useTab = (
       prev.map((file) => ({
         id: file.id,
         active: currentActiveFileId === file.id,
+        preview: file.preview ? file.preview : undefined,
       })),
     );
     setValue(TAB_ID, { id: currentActiveFileId });
@@ -43,16 +46,21 @@ const useTab = (
       prev.map((file) => ({
         id: file.id,
         active: tabId === file.id,
+        preview: file.preview ?? undefined,
       })),
     );
     setValue(TAB_ID, { id: tabId });
     clearHistory();
   };
 
-  const onCreateTab = (e?: React.SyntheticEvent, fileItem?: StageDataListItem) => {
-    const newTabId
-      = fileItem?.id
-      ?? `file-${tabList.length === 0 ? 1 : parseInt(tabList[tabList.length - 1].id.slice(5)) + 1}`;
+  const onCreateTab = (
+    preview?: string,
+    e?: React.SyntheticEvent,
+    fileItem?: StageDataListItem,
+  ) => {
+    const newTabId =
+      fileItem?.id ??
+      `file-${tabList.length === 0 ? 1 : parseInt(tabList[tabList.length - 1].id.slice(5)) + 1}`;
     const prevTabId = tabList.find((_tab) => _tab.active)?.id;
     clearSelection();
     createFileData(
@@ -70,6 +78,7 @@ const useTab = (
       {
         id: newTabId,
         active: true,
+        preview: preview ?? undefined,
       },
     ]);
     if (!fileItem) {
@@ -84,8 +93,8 @@ const useTab = (
     }
     const currentTab = tabList.find((tab) => tab.active);
     const tabIndex = tabList.findIndex((tab) => tab.id === tabId);
-    const nextTabId
-      = tabList[tabIndex].id === currentTab!.id
+    const nextTabId =
+      tabList[tabIndex].id === currentTab!.id
         ? tabList[tabIndex === 0 ? tabIndex + 1 : tabIndex - 1].id
         : currentTab!.id;
     clearSelection();
@@ -95,15 +104,10 @@ const useTab = (
       ...prev
         .filter((tab) => tab.id !== tabId)
         .map((tab) => {
-          if (tab.id === nextTabId) {
-            return {
-              id: tab.id,
-              active: true,
-            };
-          }
           return {
             id: tab.id,
-            active: false,
+            active: tab.id === nextTabId,
+            preview: tab.preview ?? undefined,
           };
         }),
     ]);

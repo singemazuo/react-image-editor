@@ -5,6 +5,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { nanoid } from "nanoid";
 import { Button, Col, Modal, Row } from "react-bootstrap";
 import Header from "./header";
+import Footer from "./footer";
 import Layout from "./layout";
 import SettingBar from "./settingBar";
 import TabGroup from "./tab";
@@ -27,12 +28,29 @@ import TextItem, { TextItemProps } from "./view/object/text";
 import ShapeItem, { ShapeItemProps } from "./view/object/shape";
 import IconItem, { IconItemProps } from "./view/object/icon";
 import LineItem, { LineItemProps } from "./view/object/line";
+import DecorationAreaItem, {
+  DecorationAreaItemProps,
+} from "./view/object/decoration";
 import useModal from "./hook/useModal";
 import hotkeyList from "./config/hotkey.json";
 import useHotkeyFunc from "./hook/useHotkeyFunc";
 import useWorkHistory from "./hook/useWorkHistory";
 import useI18n from "./hook/usei18n";
 import { initialStageDataList } from "./redux/initilaStageDataList";
+import { useQuery, gql } from "@apollo/client";
+import LoadingModal from "./loading";
+
+const GET_CART = gql`
+  query topCart {
+    uuid
+    products {
+      uuid
+      product_name
+      product_code
+      image
+    }
+  }
+`;
 
 export type FileKind = {
   "file-id": string;
@@ -45,16 +63,34 @@ export type FileData = Record<string, FileKind>;
 function App() {
   const [past, setPast] = useState<StageData[][]>([]);
   const [future, setFuture] = useState<StageData[][]>([]);
-  const { goToFuture, goToPast, recordPast, clearHistory } = useWorkHistory(
-    past,
-    future,
-    setPast,
-    setFuture,
-  );
+  const { loading, error, data } = useQuery(GET_CART);
+
+  if (loading) return <LoadingModal show={loading} />;
+
+  const initialize = () => {
+    const cart = data.data.map((o, i) => ({
+      id: o.product_code,
+      active: i == 0,
+      preview: o.image,
+    }));
+    return cart[0];
+  };
+
+  const {
+    goToFuture,
+    goToPast,
+    recordPast,
+    clearHistory,
+    getCurrentDefaultBackground,
+  } = useWorkHistory(past, future, setPast, setFuture);
   const transformer = useTransformer();
-  const { selectedItems, onSelectItem, setSelectedItems, clearSelection }
-    = useSelection(transformer);
-  const { tabList, onClickTab, onCreateTab, onDeleteTab } = useTab(transformer, clearHistory);
+  const { selectedItems, onSelectItem, setSelectedItems, clearSelection } =
+    useSelection(transformer);
+  const { tabList, onClickTab, onCreateTab, onDeleteTab } = useTab(
+    transformer,
+    clearHistory,
+    initialize,
+  );
   const { stageData } = useItem();
   const { initializeFileDataList, updateFileData } = useStageDataList();
   const stage = useStage();
@@ -74,7 +110,8 @@ function App() {
   const [clipboard, setClipboard] = useState<StageData[]>([]);
   const createStageDataObject = (item: Node<NodeConfig>): StageData => {
     const { id } = item.attrs;
-    const target = item.attrs["data-item-type"] === "frame" ? item.getParent() : item;
+    const target =
+      item.attrs["data-item-type"] === "frame" ? item.getParent() : item;
     return {
       id: nanoid(),
       attrs: {
@@ -94,7 +131,10 @@ function App() {
     onSelectItem,
   );
 
-  const currentTabId = useMemo(() => tabList.find((tab) => tab.active)?.id ?? null, [tabList]);
+  const currentTabId = useMemo(
+    () => tabList.find((tab) => tab.active)?.id ?? null,
+    [tabList],
+  );
 
   const sortedStageData = useMemo(
     () =>
@@ -120,6 +160,20 @@ function App() {
       />
     </Header>
   );
+
+  const footer = (): React.ReactNode => {
+    return (
+      <Footer>
+        <TabGroup
+          onClickTab={onClickTab}
+          tabList={tabList}
+          onCreateTab={onCreateTab}
+          onDeleteTab={onDeleteTab}
+          isHeader={false}
+        />
+      </Footer>
+    );
+  };
 
   const navBar = (
     <NavBar>
@@ -219,6 +273,16 @@ function App() {
             data={item as LineItemProps["data"]}
             transformer={transformer}
             onSelect={onSelectItem}
+          />
+        );
+      case "decoration":
+        return (
+          <DecorationAreaItem
+            key={`decoration-${item.id}`}
+            data={item as DecorationAreaItemProps["data"]}
+            transformer={transformer}
+            onSelect={onSelectItem}
+            getCurrentDefaultBackground={getCurrentDefaultBackground}
           />
         );
       default:
@@ -341,10 +405,10 @@ function App() {
       e.preventDefault();
       e.returnValue = "";
     });
-    onCreateTab(undefined, initialStageDataList[0] as StageDataListItem);
+    // onCreateTab(undefined, initialStageDataList[0] as StageDataListItem);
     initializeFileDataList(initialStageDataList);
     stage.stageRef.current.setPosition({
-      x: Math.max(Math.ceil(stage.stageRef.current.width() - 1280) / 2, 0),
+      x: Math.max(Math.ceil(stage.stageRef.current.width() - 1672) / 2, 0),
       y: Math.max(Math.ceil(stage.stageRef.current.height() - 760) / 2, 0),
     });
     stage.stageRef.current.batchDraw();
@@ -361,19 +425,23 @@ function App() {
   }, [stageData]);
 
   return (
-    <Layout header={header} navBar={navBar} settingBar={settingBar}>
-      {hotkeyModal}
-      <View onSelect={onSelectItem} stage={stage}>
-        {stageData.length ? sortedStageData.map((item) => renderObject(item)) : null}
-        <Transformer
-          ref={transformer.transformerRef}
-          keepRatio
-          shouldOverdrawWholeArea
-          boundBoxFunc={(_, newBox) => newBox}
-          onTransformEnd={transformer.onTransformEnd}
-        />
-      </View>
-    </Layout>
+    <>
+      <Layout footer={footer()} navBar={navBar} settingBar={settingBar}>
+        {hotkeyModal}
+        <View onSelect={onSelectItem} stage={stage}>
+          {stageData.length
+            ? sortedStageData.map((item) => renderObject(item))
+            : null}
+          <Transformer
+            ref={transformer.transformerRef}
+            keepRatio
+            shouldOverdrawWholeArea
+            boundBoxFunc={(_, newBox) => newBox}
+            onTransformEnd={transformer.onTransformEnd}
+          />
+        </View>
+      </Layout>
+    </>
   );
 }
 

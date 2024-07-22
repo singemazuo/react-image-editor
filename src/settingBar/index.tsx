@@ -14,6 +14,9 @@ import useStage from "../hook/useStage";
 import ShapeWidget from "./widgetList/ShapeWidget";
 import IconWidget from "./widgetList/IconWidget";
 import LineWidget from "./widgetList/LineWidget";
+import ClipartWidget from "./widgetList/ClipartWidget";
+import FontWidget from "./widgetList/FontWidget";
+import ListGroup from "react-bootstrap/ListGroup";
 
 export type SettingBarProps = {
   selectedItems: Node<NodeConfig>[];
@@ -22,7 +25,11 @@ export type SettingBarProps = {
 };
 
 const Widgets = {
-  colorPalette: (data: WidgetKind & SettingBarProps) => <ColorPaletteWidget data={data} />,
+  colorPalette: (data: WidgetKind & SettingBarProps) => (
+    <ColorPaletteWidget data={data} />
+  ),
+  clipart: (data: WidgetKind & SettingBarProps) => <ClipartWidget />,
+  font: (data: WidgetKind & SettingBarProps) => <FontWidget />,
   align: (data: WidgetKind & SettingBarProps) => <AlignWidget data={data} />,
   image: (data: WidgetKind & SettingBarProps) => <ImageWidget />,
   frame: (data: WidgetKind & SettingBarProps) => <FrameWidget />,
@@ -37,13 +44,14 @@ export type WidgetIDList = keyof typeof Widgets;
 
 const SettingBar: React.FC<SettingBarProps> = (settingProps) => (
   <aside>
-    <Accordion>
-      {(widgetList as WidgetKind[]).map((data) => (
-        <Widget key={`widget-${data.id}`} data={{ ...data, ...settingProps }}>
+    <div>
+      {(widgetList as WidgetKind[]).map((data, index) => (
+        <div>
           {Widgets[data.id] && Widgets[data.id]({ ...data, ...settingProps })}
-        </Widget>
+          {widgetList.length - 1 !== index && <hr />}
+        </div>
       ))}
-    </Accordion>
+    </div>
   </aside>
 );
 

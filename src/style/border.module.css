@@ -123,6 +123,10 @@
   border: 1px solid var(--color-grey);
 }
 
+.all-black {
+  border: 1px solid var(--color-black);
+}
+
 .none {
   border: none !important;
 }
@@ -141,7 +145,7 @@
 }
 
 .colorDark {
-  border-color: var(--color-dark);
+  border-color: var(--color-dark) !important;
 }
 
 .colorWhite {

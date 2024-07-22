@@ -34,3 +34,7 @@
   background-color: transparent !important;
   color: var(--color-dark) !important;
 }
+
+.blackColor {
+  color: var(--color-dark) !important;
+}

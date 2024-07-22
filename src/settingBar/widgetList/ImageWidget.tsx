@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Button, Col, Figure, Row } from "react-bootstrap";
 import { nanoid } from "nanoid";
 import presetImageList from "../../config/image.json";
@@ -10,10 +10,13 @@ import spaceStyles from "../../style/space.module.css";
 import displayStyles from "../../style/display.module.css";
 import alignStyles from "../../style/align.module.css";
 import fontStyles from "../../style/font.module.css";
+import positionStyles from "../../style/position.module.css";
 import Drag from "../../util/Drag";
 import TRIGGER from "../../config/trigger";
 import useImageAsset from "../../hook/useImageAsset";
 import useI18n from "../../hook/usei18n";
+import { useDropzone } from "react-dropzone";
+import "react-dropzone/examples/theme.css";
 
 export const IMAGE_LIST_KEY = "importedImage";
 
@@ -27,6 +30,7 @@ const ImageWidget: React.FC = () => {
     setImageAsset(presetImageList);
     return [...presetImageList];
   });
+  const { getRootProps, getInputProps } = useDropzone();
 
   const uploadImage = () => {
     const fileReader = new FileReader();
@@ -54,7 +58,7 @@ const ImageWidget: React.FC = () => {
         Object.values((event.target as HTMLInputElement).files!).forEach(
           (file) => {
             fileReader.readAsDataURL(file);
-          }
+          },
         );
       }
     };
@@ -62,11 +66,18 @@ const ImageWidget: React.FC = () => {
   };
 
   return (
-    <Col className={[sizeStyles["mx-h-30vh"]].join(" ")}>
+    <Col
+      className={[sizeStyles["mx-h-30vh"]]
+        .concat([positionStyles["toolbar-section-container"]])
+        .join(" ")}
+    >
       <Row>
-        <h6>
-          {getTranslation("widget", "image", "name")}
-          <Button
+        <h6
+          className={[positionStyles["toolbar-section-h6"]].join(" ")}
+          style={{ marginTop: "15px", fontSize: "0.8rem" }}
+        >
+          {getTranslation("widget", "uploadPhoto", "name")}
+          {/* <Button
             className={[
               colorStyles.transparentDarkColorTheme,
               borderStyles.none,
@@ -79,23 +90,33 @@ const ImageWidget: React.FC = () => {
             onClick={uploadImage}
           >
             <i className="bi-plus" />
-          </Button>
+          </Button> */}
         </h6>
       </Row>
-      <Row xs={2}>
-        {imageAssetList.map((_data) => (
-          <ImageThumbnail
-            key={`image-thumbnail-${_data.id}`}
-            data={{
-              id: _data.id,
-              src: _data.src ?? `find:${_data.id}`,
-              name: _data.name,
-              "data-item-type": _data.type,
-            }}
-            maxPx={80}
-          />
-        ))}
-      </Row>
+      <div>
+        <section
+          className={["container"]
+            .concat([positionStyles["toolbar-upload-photo-dropzone"]])
+            .join(" ")}
+        >
+          <div
+            {...getRootProps({
+              className: "dropzone",
+              style: {
+                background: "rgba(0,0,0,0)",
+                alignItems: "center",
+                margin: "0.2rem 0",
+              },
+            })}
+          >
+            <input {...getInputProps()} />
+            <p>+</p>
+          </div>
+        </section>
+        <p className={[positionStyles["toolbar-section-text"]].join(" ")}>
+          {"(JPG,PNG,EPS,AI,& PDF) Max 5 MB"}
+        </p>
+      </div>
     </Col>
   );
 };

@@ -55,7 +55,9 @@ const ImageItem: React.FC<ImageItemProps> = ({ data, e, onSelect }) => {
     if (!data.attrs._filters) {
       return [Konva.Filters.Brighten];
     }
-    return data.attrs._filters.map((filterName: string) => filterMap[filterName]);
+    return data.attrs._filters.map(
+      (filterName: string) => filterMap[filterName],
+    );
   }, [data.attrs]);
 
   useEffect(() => {
@@ -76,10 +78,14 @@ const ImageItem: React.FC<ImageItemProps> = ({ data, e, onSelect }) => {
         let height;
         if (imageNode.width() > imageNode.height()) {
           width = decimalUpToSeven(512);
-          height = decimalUpToSeven(width * (imageNode.height() / imageNode.width()));
+          height = decimalUpToSeven(
+            width * (imageNode.height() / imageNode.width()),
+          );
         } else {
           height = decimalUpToSeven(512);
-          width = decimalUpToSeven(height * (imageNode.width() / imageNode.height()));
+          width = decimalUpToSeven(
+            height * (imageNode.width() / imageNode.height()),
+          );
         }
         imageNode.width(width);
         imageNode.height(height);
@@ -129,7 +135,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ data, e, onSelect }) => {
       opacity={attrs.opacity ?? 1}
       rotation={attrs.rotation ?? 0}
       filters={filters ?? [Konva.Filters.Brighten]}
-      draggable
+      draggable={attrs.draggable}
       onDragMove={onDragMoveFrame}
       onDragEnd={onDragEndFrame}
     />
