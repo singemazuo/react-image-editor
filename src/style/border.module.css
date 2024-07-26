@@ -12,6 +12,21 @@
   border-radius: 50%;
 }
 
+.roundTopLeftSM {
+  /* border-top-left-radius: 0.4rem !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important; */
+  border-radius: 0 !important;
+}
+
+.roundBottomLeftSM {
+  /* border-top-left-radius: 0rem !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-left-radius: 0.4 !important;
+  border-bottom-right-radius: 0 !important; */
+}
+
 .roundTopSM {
   border-top-left-radius: 1rem !important;
   border-top-right-radius: 1rem !important;

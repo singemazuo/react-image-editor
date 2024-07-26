@@ -6,6 +6,12 @@
   position: absolute;
 }
 
+.navbar {
+  position: absolute;
+  top: 10px;
+  right: 0px;
+}
+
 .foot-nav-item-close {
   position: absolute;
   top: 0.2rem;
@@ -15,13 +21,21 @@
   cursor: pointer;
 }
 
+.custom-offcanvas {
+  position: absolute;
+  top: 0;
+  left: 200px;
+  height: 100%;
+  width: 100px; /* Adjust the width as needed */
+  max-width: 100%;
+  z-index: 1000 !important;
+  transition: transform 0.3s ease-in-out;
+}
+
 .toolbar-section-container {
   margin: 18px 0;
   text-align: center;
   color: #ddd;
-}
-
-.toolbar-section-container-button {
 }
 
 .toolbar-section-container-button:hover {

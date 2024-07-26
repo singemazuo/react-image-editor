@@ -37,22 +37,26 @@ import useHotkeyFunc from "./hook/useHotkeyFunc";
 import useWorkHistory from "./hook/useWorkHistory";
 import useI18n from "./hook/usei18n";
 import { initialStageDataList } from "./redux/initilaStageDataList";
-import { gql, useApolloClient } from "@apollo/client";
-import LoadingModal from "./loading";
+import { gql, useApolloClient, useQuery } from "@apollo/client";
+import LoadingModal from "./modal/loading";
 import { TabKind } from "./tab/Tab";
+import ErrorModal from "./modal/error";
+import { v4 as guid } from 'uuid';
 
 const GET_CART = gql`
-  query topCart {
-    uuid
-    products {
+  query {
+    getCart {
       uuid
-      product_name
-      product_code
-      image
-      productParts {
-        image
+      products {
         uuid
-        priority
+        product_name
+        product_code
+        image
+        product_parts {
+          image
+          uuid
+          priority
+        }
       }
     }
   }
@@ -69,9 +73,7 @@ export type FileData = Record<string, FileKind>;
 function App() {
   const [past, setPast] = useState<StageData[][]>([]);
   const [future, setFuture] = useState<StageData[][]>([]);
-  const [isLoading, setLoading] = useState(true);
-  const [data, setData] = useState(null);
-  const client = useApolloClient();
+  const { data, loading, error } = useQuery(GET_CART);
 
   // const initialize = () => {
   //   const cart = data.data.map((o, i) => ({
@@ -166,31 +168,20 @@ function App() {
     </Header>
   );
 
-  const footer = (): React.ReactNode => {
-    return (
-      <Footer>
-        <TabGroup
-          onClickTab={onClickTab}
-          tabList={tabList}
-          onCreateTab={onCreateTab}
-          onDeleteTab={onDeleteTab}
-          isHeader={false}
-        />
-      </Footer>
-    );
-  };
+  const footer = (
+    <Footer>
+      <TabGroup
+        onClickTab={onClickTab}
+        tabList={tabList}
+        onCreateTab={onCreateTab}
+        onDeleteTab={onDeleteTab}
+        isHeader={false}
+      />
+    </Footer>
+  );
 
   const navBar = (
-    <NavBar>
-      {workModeList.map((data) => (
-        <NavBarButton
-          key={`navbar-${data.id}`}
-          data={data}
-          stage={stage}
-          onClick={getClickCallback(data.id)}
-        />
-      ))}
-    </NavBar>
+    <NavBar items={workModeList} onClick={getClickCallback}></NavBar>
   );
 
   const hotkeyModal = (
@@ -408,46 +399,58 @@ function App() {
   useEffect(() => {
     if (!data) return;
 
-    const productList = data.data.topCart.products.map((o, i) => {
+    const dataTransform = () => {
+      let productPartList = [];
+      const productList = data.getCart.products.map((o, i) => {
+        const partList = o.product_parts.map(p => ({img:p.image,priority:p.priority}));
+        const p = o.product_parts[0];
+        const part = {
+          id: guid(),
+          attrs: {
+            name: "label-target",
+            "data-item-type": "image",
+            x: 372,
+            y: 0,
+            width: 862,
+            height: 862,
+            src: p.image,
+            zIndex: 0,
+            brightness: 0,
+            draggable: false,
+            visible: false,
+            updatedAt: Date.now(),
+          },
+          className: "sample-image",
+          children: [],
+        };
+        productPartList.push({
+          id: o.product_code,
+          data: [part]
+        });
+        return {
+          id: o.product_code,
+          preview: o.image,
+          active: i == 0,
+          parts:partList,
+        };
+      })
+
       return {
-        id: o.product_code,
-        preview: o.image,
-        active: i == 0,
+        productList,
+        productPartList
       };
-      // return {
-      //   id: o.uuid,
-      //   data: [
-      //     {
-      //       id: o.product_code,
-      //       attrs: {
-      //         name: "label-target",
-      //         "data-item-type": "image",
-      //         x: 372,
-      //         y: 0,
-      //         width: 862,
-      //         height: 862,
-      //         src: o.image,
-      //         zIndex: 0,
-      //         brightness: 0,
-      //         draggable: false,
-      //         visible: false,
-      //         updatedAt: Date.now(),
-      //       },
-      //       className: "sample-image",
-      //       children: [],
-      //     },
-      //   ],
-      // };
-    }) as TabKind[];
+    };
 
     window.addEventListener("beforeunload", (e) => {
       e.preventDefault();
       e.returnValue = "";
     });
 
+    const {productList, productPartList} = dataTransform();
+
     // onCreateTab(undefined, initialStageDataList[0] as StageDataListItem);
     onInitTabs(productList);
-    initializeFileDataList(initialStageDataList);
+    initializeFileDataList(productPartList);
     stage.stageRef.current.setPosition({
       x: Math.max(Math.ceil(stage.stageRef.current.width() - 1672) / 2, 0),
       y: Math.max(Math.ceil(stage.stageRef.current.height() - 760) / 2, 0),
@@ -456,20 +459,7 @@ function App() {
   }, [data]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const { data } = await client.query({
-          query: GET_CART,
-        });
-        setData(data);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    
   }, []);
 
   useEffect(() => {
@@ -482,12 +472,12 @@ function App() {
     recordPast(stageData);
   }, [stageData]);
 
-  if(isLoading) return <LoadingModal show={true} />;
+  // const showErrorModal = (show) => <ErrorModal show={show} error={error?.message}/>;
 
   return (
     <>
-      <Layout footer={footer()} navBar={navBar} settingBar={settingBar}>
-        {hotkeyModal}
+      <Layout footer={footer} navBar={navBar} settingBar={settingBar}>
+        {/* {hotkeyModal} */}
         <View onSelect={onSelectItem} stage={stage}>
           {stageData.length
             ? sortedStageData.map((item) => renderObject(item))
@@ -501,6 +491,8 @@ function App() {
           />
         </View>
       </Layout>
+      <LoadingModal show={loading} />;
+      {/* <ErrorModal show={data && (error !== undefined || error !== null)} error={error?.message}/> */}
     </>
   );
 }

@@ -276,7 +276,6 @@ const View: React.FC<ViewProps> = ({
           width={window.innerWidth * 0.8}
           height={window.innerHeight * 0.8}
           draggable={false}
-          onWheel={zoomOnWheel}
           onMouseDown={onMouseDownOnStage}
           onMouseMove={onMouseMoveOnStage}
           onMouseUp={onMouseUpOnStage}

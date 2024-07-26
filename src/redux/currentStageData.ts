@@ -8,6 +8,7 @@ export const STAGE_PREFIX = "STAGE";
 
 export type StageData = {
   id: string;
+  isDefault?: boolean;
   attrs: OverrideItemData<any>;
   className: string;
   children?: StageData[];

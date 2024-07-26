@@ -12,12 +12,14 @@ export type TabKind = {
   id: string;
   active: boolean;
   preview?: string;
+  parts?: any[];
 };
 
 export type TabProps = {
   data: TabKind;
   onClickTab: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   onDeleteTab: (tabId: string) => void;
+  canClose?: boolean;
 };
 
 class Tab extends React.Component<TabProps> {
