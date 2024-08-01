@@ -16,22 +16,18 @@ const NavBarItem: React.FC<NavBarItemProps> = ({data, onClick}) => {
 
     if(data.type === "middle"){
         return (
-            <Button
-                data-navbar-id={data.id}
-                onClick={() => onClick(data.id)}
-                className={[colorStyles["navbar-buttongroup-tools"],data.classes,"rounded-0"].join(" ")}>
-                {data.icon ? (
-                    <i className={`bi-${data.icon}`} />
-                ) : (
-                    getTranslation("hotkey", data.id, "name")
-                )}
-            </Button>
+            <div key={data.id} className="p-1 align-items-center m-auto" style={{cursor:"pointer"}}>
+                <i className={[`bi-${data.icon}`].join(" ")} style={{fontSize:"0.8rem"}}/>
+            </div>
         );
     }else if(data.type == "top"){
         return (
-            <Nav.Item>
-                <Nav.Link
-                    eventKey={data.id}
+            <div 
+                key={data.id}
+                className='p-1'
+                style={{cursor:"pointer",width:"2.6rem",fontSize:".7rem"}}
+            >
+                <div
                     className={[
                         data.active
                           ? colorStyles.greyTheme
@@ -39,13 +35,15 @@ const NavBarItem: React.FC<NavBarItemProps> = ({data, onClick}) => {
                         borderStyles.roundSM,
                         fontStyles.fontHalf1em,
                         data.active ? borderStyles.colorDark : borderStyles.none,
+                        data.classes,
                     ].join(" ")}
-                    data-active={data.active}
                     onClick={() => onClick(data.id)}
+                    style={{height: "2.2rem", width: "2.2rem"}}
                 >
-                    <Image src={data.icon} rounded />
-                </Nav.Link>
-            </Nav.Item>
+                    <Image src={data.icon} rounded style={{height: "100%", margin: "auto"}}/>
+                </div>
+                <span>{data.name}</span>
+            </div>
         );
     }
     return <></>;

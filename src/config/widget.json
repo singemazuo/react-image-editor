@@ -10,5 +10,9 @@
   {
     "id": "font",
     "name": "Font"
+  },
+  {
+    "id": "teamNames",
+    "name": "Add Team Names"
   }
 ]

@@ -66,58 +66,61 @@ const ImageWidget: React.FC = () => {
   };
 
   return (
-    <Col
-      className={[sizeStyles["mx-h-30vh"]]
-        .concat([positionStyles["toolbar-section-container"]])
-        .join(" ")}
-    >
-      <Row>
-        <h6
-          className={[positionStyles["toolbar-section-h6"]].join(" ")}
-          style={{ marginTop: "15px", fontSize: "0.8rem" }}
-        >
-          {getTranslation("widget", "uploadPhoto", "name")}
-          {/* <Button
-            className={[
-              colorStyles.transparentDarkColorTheme,
-              borderStyles.none,
-              displayStyles["inline-block"],
-              sizeStyles.width25,
-              spaceStyles.p0,
-              spaceStyles.ml1rem,
-              alignStyles["text-left"],
-            ].join(" ")}
-            onClick={uploadImage}
+    <>
+      <Col
+        className={[sizeStyles["mx-h-30vh"]]
+          .concat([positionStyles["toolbar-section-container"]])
+          .join(" ")}
+      >
+        <Row>
+          <h6
+            className={[positionStyles["toolbar-section-h6"]].join(" ")}
+            style={{ marginTop: "15px", fontSize: "0.8rem" }}
           >
-            <i className="bi-plus" />
-          </Button> */}
-        </h6>
-      </Row>
-      <div>
-        <section
-          className={["container"]
-            .concat([positionStyles["toolbar-upload-photo-dropzone"]])
-            .join(" ")}
-        >
-          <div
-            {...getRootProps({
-              className: "dropzone",
-              style: {
-                background: "rgba(0,0,0,0)",
-                alignItems: "center",
-                margin: "0.2rem 0",
-              },
-            })}
+            {getTranslation("widget", "uploadPhoto", "name")}
+            {/* <Button
+              className={[
+                colorStyles.transparentDarkColorTheme,
+                borderStyles.none,
+                displayStyles["inline-block"],
+                sizeStyles.width25,
+                spaceStyles.p0,
+                spaceStyles.ml1rem,
+                alignStyles["text-left"],
+              ].join(" ")}
+              onClick={uploadImage}
+            >
+              <i className="bi-plus" />
+            </Button> */}
+          </h6>
+        </Row>
+        <div>
+          <section
+            className={["container"]
+              .concat([positionStyles["toolbar-upload-photo-dropzone"]])
+              .join(" ")}
           >
-            <input {...getInputProps()} />
-            <p>+</p>
-          </div>
-        </section>
-        <p className={[positionStyles["toolbar-section-text"]].join(" ")}>
-          {"(JPG,PNG,EPS,AI,& PDF) Max 5 MB"}
-        </p>
-      </div>
-    </Col>
+            <div
+              {...getRootProps({
+                className: "dropzone",
+                style: {
+                  background: "rgba(0,0,0,0)",
+                  alignItems: "center",
+                  margin: "0.2rem 0",
+                },
+              })}
+            >
+              <input {...getInputProps()} />
+              <p>+</p>
+            </div>
+          </section>
+          <p className={[positionStyles["toolbar-section-text"]].join(" ")}>
+            {"(JPG,PNG,EPS,AI,& PDF) Max 5 MB"}
+          </p>
+        </div>
+      </Col>
+      <hr className="m-0"></hr>
+    </>
   );
 };
 

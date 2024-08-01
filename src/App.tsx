@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
 import { Transformer } from "react-konva";
 import { Node, NodeConfig } from "konva/lib/Node";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -7,7 +7,7 @@ import { Button, Col, Modal, Row } from "react-bootstrap";
 import Header from "./header";
 import Footer from "./footer";
 import Layout from "./layout";
-import SettingBar from "./settingBar";
+import SettingBar, { SettingSideBar } from "./settingBar";
 import TabGroup from "./tab";
 import workModeList from "./config/workMode.json";
 import NavBar from "./navBar";
@@ -39,9 +39,11 @@ import useI18n from "./hook/usei18n";
 import { initialStageDataList } from "./redux/initilaStageDataList";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import LoadingModal from "./modal/loading";
-import { TabKind } from "./tab/Tab";
+import { NavItemKind, TabKind } from "./tab/Tab";
 import ErrorModal from "./modal/error";
 import { v4 as guid } from 'uuid';
+import { useData } from "./data";
+import { SubmenuType } from "./settingBar/sideBar";
 
 const GET_CART = gql`
   query {
@@ -71,9 +73,13 @@ export type FileKind = {
 export type FileData = Record<string, FileKind>;
 
 function App() {
-  const [past, setPast] = useState<StageData[][]>([]);
-  const [future, setFuture] = useState<StageData[][]>([]);
+  const [ navModelList, setNavModelList ] = useState(workModeList);
+  const [ past, setPast ] = useState<StageData[][]>([]);
+  const [ future, setFuture ] = useState<StageData[][]>([]);
+  const [ activeMenu, setActiveMenu ] = useState<SubmenuType>(SubmenuType.Default);
   const { data, loading, error } = useQuery(GET_CART);
+  const settingBarRef = useRef<HTMLDivElement | null>(null);
+  const settingSideBarRef = useRef<HTMLDivElement | null>(null);
 
   // const initialize = () => {
   //   const cart = data.data.map((o, i) => ({
@@ -85,6 +91,10 @@ function App() {
   // };
 
   const {
+    makeProduct
+  } = useData();
+
+  const {
     goToFuture,
     goToPast,
     recordPast,
@@ -94,7 +104,7 @@ function App() {
   const transformer = useTransformer();
   const { selectedItems, onSelectItem, setSelectedItems, clearSelection } =
     useSelection(transformer);
-  const { tabList, onClickTab, onCreateTab, onDeleteTab, onInitTabs } = useTab(
+  const { tabList, onClickTab, onCreateTab, onDeleteTab, onInitTabs, onNavSelect } = useTab(
     transformer,
     clearHistory,
   );
@@ -168,10 +178,40 @@ function App() {
     </Header>
   );
 
+  const getNavItemName = (priority: number) => {
+    switch (priority) {
+      case 0:
+        return "Font";
+      case 1:
+        return "Rare";
+      case 2:
+        return "Left Sleeve";
+      case 3:
+        return "Right Sleeve";
+      default:
+        return null;
+    }
+  };
+
   const footer = (
     <Footer>
       <TabGroup
-        onClickTab={onClickTab}
+        onClickTab={(e, tab) => {
+          onClickTab(e);
+          const models = workModeList.map(o => {
+            if(o.type === "middle"){
+              return o;
+            }
+          });
+          const newModels = tab.parts.sort((a, b) => a.priority - b.priority).map((o:NavItemKind) => ({
+            id: o.id,
+            type: "top",
+            name: getNavItemName(o.priority),
+            desc: getNavItemName(o.priority),
+            icon: o.img,
+          }));
+          setNavModelList(models.concat(newModels));
+        }}
         tabList={tabList}
         onCreateTab={onCreateTab}
         onDeleteTab={onDeleteTab}
@@ -180,8 +220,13 @@ function App() {
     </Footer>
   );
 
+  const onNavItemSelect = (index: number) => {
+    const item = onNavSelect(index);
+    
+  };
+
   const navBar = (
-    <NavBar items={workModeList} onClick={getClickCallback}></NavBar>
+    <NavBar items={navModelList} onClick={getClickCallback} onSelect={onNavItemSelect}></NavBar>
   );
 
   const hotkeyModal = (
@@ -211,10 +256,16 @@ function App() {
 
   const settingBar = (
     <SettingBar
+      ref={settingBarRef}
       selectedItems={selectedItems}
       clearSelection={clearSelection}
       stageRef={stage.stageRef}
+      onSubmenuClick={setActiveMenu}
     />
+  );
+
+  const subMenu = (target: MutableRefObject<HTMLElement | null>) => (
+    <SettingSideBar ref={settingSideBarRef} menu={activeMenu} target={target}></SettingSideBar>
   );
 
   const renderObject = (item: StageData) => {
@@ -399,56 +450,22 @@ function App() {
   useEffect(() => {
     if (!data) return;
 
-    const dataTransform = () => {
-      let productPartList = [];
-      const productList = data.getCart.products.map((o, i) => {
-        const partList = o.product_parts.map(p => ({img:p.image,priority:p.priority}));
-        const p = o.product_parts[0];
-        const part = {
-          id: guid(),
-          attrs: {
-            name: "label-target",
-            "data-item-type": "image",
-            x: 372,
-            y: 0,
-            width: 862,
-            height: 862,
-            src: p.image,
-            zIndex: 0,
-            brightness: 0,
-            draggable: false,
-            visible: false,
-            updatedAt: Date.now(),
-          },
-          className: "sample-image",
-          children: [],
-        };
-        productPartList.push({
-          id: o.product_code,
-          data: [part]
-        });
-        return {
-          id: o.product_code,
-          preview: o.image,
-          active: i == 0,
-          parts:partList,
-        };
-      })
-
-      return {
-        productList,
-        productPartList
-      };
-    };
-
     window.addEventListener("beforeunload", (e) => {
       e.preventDefault();
       e.returnValue = "";
     });
 
-    const {productList, productPartList} = dataTransform();
+    const {productList, productPartList} = makeProduct(data.getCart.products);
 
     // onCreateTab(undefined, initialStageDataList[0] as StageDataListItem);
+    setNavModelList(productList[0].parts.map(o => ({
+      id: o.id,
+      type: "top",
+      active: o.active,
+      name: getNavItemName(o.priority),
+      desc: getNavItemName(o.priority),
+      icon: o.img,
+    })));
     onInitTabs(productList);
     initializeFileDataList(productPartList);
     stage.stageRef.current.setPosition({
@@ -457,10 +474,6 @@ function App() {
     });
     stage.stageRef.current.batchDraw();
   }, [data]);
-
-  useEffect(() => {
-    
-  }, []);
 
   useEffect(() => {
     if (currentTabId) {
@@ -472,11 +485,20 @@ function App() {
     recordPast(stageData);
   }, [stageData]);
 
+  useEffect(() => {
+    document.addEventListener("mousedown", (e) => {
+      if((settingBarRef.current && !settingBarRef.current.contains(e.target as any)) 
+        && (settingSideBarRef.current && !settingSideBarRef.current.contains(e.target as any))){
+        setActiveMenu(SubmenuType.Default);
+      }
+    });
+  }, [settingBarRef, settingSideBarRef]);
+
   // const showErrorModal = (show) => <ErrorModal show={show} error={error?.message}/>;
 
   return (
     <>
-      <Layout footer={footer} navBar={navBar} settingBar={settingBar}>
+      <Layout footer={footer} navBar={navBar} settingBar={settingBar} subMenu={subMenu}>
         {/* {hotkeyModal} */}
         <View onSelect={onSelectItem} stage={stage}>
           {stageData.length

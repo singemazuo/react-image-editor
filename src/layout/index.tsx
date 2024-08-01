@@ -1,18 +1,21 @@
-import React from "react";
+import React, { MutableRefObject } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import sizeStyles from "../style/size.module.css";
 import colorStyles from "../style/color.module.css";
 import alignStyles from "../style/align.module.css";
 import positionStyles from "../style/position.module.css";
-import spaceStyles from "../style/space.module.css";
 import overflowStyles from "../style/overflow.module.css";
+import themeStyles from "../style/theme.module.css";
 import { ClipartDrawer } from "../settingBar/drawer";
+import WidgetSideBar, { SubmenuType } from "../settingBar/sideBar";
+import { SettingSideBar } from "../settingBar";
 
 type LayoutProps = {
   header?: React.ReactNode;
   navBar?: React.ReactNode;
   settingBar?: React.ReactNode;
   footer?: React.ReactNode;
+  subMenu?: (target:MutableRefObject<HTMLElement|null>) => React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -26,8 +29,10 @@ const Layout: React.FC<LayoutProps> = ({
   settingBar,
   children,
   footer,
+  subMenu,
 }) => {
   const [ show, setShow ] = React.useState(true);
+  const [ activeMenu, setActiveMenu ] = React.useState(SubmenuType.Default);
   const target = React.useRef(null);
   return(
     <div
@@ -53,14 +58,52 @@ const Layout: React.FC<LayoutProps> = ({
           positionStyles.zIndex1,
         ].join(" ")}
       >
-        <Col
-          xs="4"
+        <div className="d-flex">
+          <div
+            ref={target}
+            className={[
+              sizeStyles.height100,
+              alignStyles.fromTopCenter,
+              themeStyles["setting-bar"],
+              "px-1",
+              "flex-1",
+            ].join(" ")}
+          >
+            {settingBar}
+          </div>
+          {subMenu(target)}
+          <div 
+            className={[
+              "flex-1",
+              sizeStyles.width100,
+              sizeStyles.height100,
+              positionStyles.relative,
+              colorStyles.greyTheme,
+            ].join(" ")}
+          >
+            {children}
+          </div>
+          <div
+            className={[
+              "flex-1",
+              "justify-content-end",
+              sizeStyles.height100,
+              positionStyles.relative,
+              positionStyles.zIndex1,
+            ].join(" ")}
+            style={commonStyle}
+          >
+            {navBar}
+          </div>
+        </div>
+        {/* <Col
+          xs="auto"
           ref={target}
           className={[
-            colorStyles.darkTheme,
             sizeStyles.widthLogo,
             sizeStyles.height100,
             alignStyles.fromTopCenter,
+            themeStyles["setting-bar"]
           ].join(" ")}
         >
           {settingBar}
@@ -84,7 +127,7 @@ const Layout: React.FC<LayoutProps> = ({
           style={commonStyle}
         >
           {navBar}
-        </Col>
+        </Col> */}
       </Row>
       {footer && (
         <Row
@@ -100,7 +143,6 @@ const Layout: React.FC<LayoutProps> = ({
           {footer}
         </Row>
       )}
-      <ClipartDrawer show={show} target={target}></ClipartDrawer>
     </div>
   );
 };

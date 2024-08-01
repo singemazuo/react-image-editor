@@ -5,3 +5,15 @@
   --color-grey: #e3e6e8;
   --color-contrast: #608d85;
 }
+
+.font-theme {
+  --bs-bg-opacity: 0 !important;
+}
+
+.setting-bar {
+  background-color: #3D3D3D !important;
+  color: var(--color-light) !important;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px !important;
+  z-index: 2;
+}
+

@@ -32,7 +32,7 @@ class FooterTab extends Tab {
           ].join(" ")}
           data-file-id={data.id}
           data-active={data.active}
-          onClick={onClickTab}
+          onClick={(e) => onClickTab(e, data)}
         >
           {data.active ? (
             <Button

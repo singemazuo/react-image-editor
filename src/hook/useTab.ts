@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { StageDataListItem } from "../redux/stageDataList";
-import Tab, { TabKind } from "../tab/Tab";
+import Tab, { NavItemKind, TabKind } from "../tab/Tab";
 import useLocalStorage from "./useLocalStorage";
 import useSelection from "./useSelection";
 import useStageDataList from "./useStageDataList";
@@ -19,7 +19,7 @@ const useTab = (
   const { clearSelection } = useSelection(transformer);
   const { setValue } = useLocalStorage();
 
-  const onClickTab = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const onClickTab = (e: React.MouseEvent<HTMLAnchorElement|HTMLElement, MouseEvent>) => {
     const currentActiveFileId = e.currentTarget.dataset.fileId;
     const prevFileId = tabList.find((tab) => tab.active)?.id;
     clearSelection();
@@ -30,6 +30,7 @@ const useTab = (
         id: file.id,
         active: currentActiveFileId === file.id,
         preview: file.preview ? file.preview : undefined,
+        parts: file.parts,
       })),
     );
     setValue(TAB_ID, { id: currentActiveFileId });
@@ -46,6 +47,7 @@ const useTab = (
         id: file.id,
         active: tabId === file.id,
         preview: file.preview ?? undefined,
+        parts: file.parts,
       })),
     );
     setValue(TAB_ID, { id: tabId });
@@ -74,9 +76,10 @@ const useTab = (
     );
     changeStageData(prevTabId ?? newTabId, newTabId);
     setTabList((prev) => [
-      ...Object.values(prev).map((tab, index) => ({
+      ...Object.values(prev).map(tab => ({
         ...tab,
         active: false,
+        parts: tab.parts,
       })),
       {
         id: newTabId,
@@ -111,11 +114,23 @@ const useTab = (
             id: tab.id,
             active: tab.id === nextTabId,
             preview: tab.preview ?? undefined,
+            parts: tab.parts,
           };
         }),
     ]);
     setValue(TAB_ID, { id: nextTabId });
     clearHistory();
+  };
+
+  const onNavSelect = (index: number):NavItemKind => {
+    const currentTab = tabList.find((tab) => tab.active);
+    currentTab.parts = currentTab.parts.map((o, i) => {
+      return {
+        ...o,
+        active:i == index,
+      }
+    });
+    return currentTab.parts.find(o => o.active);
   };
 
   return {
@@ -124,6 +139,7 @@ const useTab = (
     onCreateTab,
     onInitTabs,
     onDeleteTab,
+    onNavSelect,
     moveTab,
   };
 };

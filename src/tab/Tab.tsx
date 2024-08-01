@@ -8,16 +8,23 @@ import spaceStyles from "../style/space.module.css";
 import fontStyles from "../style/font.module.css";
 import alignStyles from "../style/align.module.css";
 
+export type NavItemKind = {
+  id: string;
+  img: string;
+  priority: number;
+  active?: boolean;
+};
+
 export type TabKind = {
   id: string;
   active: boolean;
   preview?: string;
-  parts?: any[];
+  parts?: NavItemKind[];
 };
 
 export type TabProps = {
   data: TabKind;
-  onClickTab: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  onClickTab: (e: React.MouseEvent<HTMLAnchorElement|HTMLElement, MouseEvent>, selectedTabKind: TabKind) => void;
   onDeleteTab: (tabId: string) => void;
   canClose?: boolean;
 };
@@ -46,7 +53,7 @@ class Tab extends React.Component<TabProps> {
           ].join(" ")}
           data-file-id={this.props.data.id}
           data-active={this.props.data.active}
-          onClick={this.props.onClickTab}
+          onClick={(e) => this.props.onClickTab(e, this.props.data)}
         >
           {this.props.data.id}
           {this.props.canClose && (
