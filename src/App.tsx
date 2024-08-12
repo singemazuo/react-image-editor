@@ -1,4 +1,4 @@
-import React, { MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
+import React, { MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Transformer } from "react-konva";
 import { Node, NodeConfig } from "konva/lib/Node";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -44,6 +44,9 @@ import ErrorModal from "./modal/error";
 import { v4 as guid } from 'uuid';
 import { useData } from "./data";
 import { SubmenuType } from "./settingBar/sideBar";
+import { EventName } from "./config/constants";
+import useCompRect from "./hook/useComp/useCompRect";
+import useEvent from "./hook/useEvent";
 
 const GET_CART = gql`
   query {
@@ -76,19 +79,15 @@ function App() {
   const [ navModelList, setNavModelList ] = useState(workModeList);
   const [ past, setPast ] = useState<StageData[][]>([]);
   const [ future, setFuture ] = useState<StageData[][]>([]);
+  const [ settingBarKey ] = useState<string>(guid());
   const [ activeMenu, setActiveMenu ] = useState<SubmenuType>(SubmenuType.Default);
+  const [ settingBarRect, setSettingBarRect ] = useState<{x: number, y: number, width: number, height: number} | null>(null);
   const { data, loading, error } = useQuery(GET_CART);
   const settingBarRef = useRef<HTMLDivElement | null>(null);
   const settingSideBarRef = useRef<HTMLDivElement | null>(null);
 
-  // const initialize = () => {
-  //   const cart = data.data.map((o, i) => ({
-  //     id: o.product_code,
-  //     active: i == 0,
-  //     preview: o.image,
-  //   }));
-  //   return {id:"",active:true,preview:""};
-  // };
+  const settingBarEvent = useCompRect(EventName.SETTING_BAR_EVENT);
+  const { emit } = useEvent();
 
   const {
     makeProduct
@@ -108,7 +107,7 @@ function App() {
     transformer,
     clearHistory,
   );
-  const { stageData } = useItem();
+  const { stageData, createItem } = useItem();
   const { initializeFileDataList, updateFileData } = useStageDataList();
   const stage = useStage();
   const modal = useModal();
@@ -166,6 +165,11 @@ function App() {
       }),
     [stageData],
   );
+
+  const onImageUpload = (data: StageData) => {
+    createItem(data);
+    console.log(stageData);
+  };
 
   const header = (
     <Header>
@@ -261,11 +265,12 @@ function App() {
       clearSelection={clearSelection}
       stageRef={stage.stageRef}
       onSubmenuClick={setActiveMenu}
+      onImageUpload={onImageUpload}
     />
   );
 
-  const subMenu = (target: MutableRefObject<HTMLElement | null>) => (
-    <SettingSideBar ref={settingSideBarRef} menu={activeMenu} target={target}></SettingSideBar>
+  const subMenu = () => (
+    <SettingSideBar ref={settingSideBarRef} menu={activeMenu}></SettingSideBar>
   );
 
   const renderObject = (item: StageData) => {
@@ -447,15 +452,22 @@ function App() {
     [selectedItems, transformer.transformerRef.current],
   );
 
+  settingBarEvent.onEvent((rect) => {
+    setSettingBarRect(rect);
+  });
+
   useEffect(() => {
-    if (!data) return;
+    if (!data || !settingBarRect) return;
 
     window.addEventListener("beforeunload", (e) => {
       e.preventDefault();
       e.returnValue = "";
     });
 
-    const {productList, productPartList} = makeProduct(data.getCart.products);
+    const {productList, productPartList} = makeProduct(data.getCart.products, {
+      referenceWidth: window.innerWidth - settingBarRect.width, 
+      referenceHeight: settingBarRect.height,
+    });
 
     // onCreateTab(undefined, initialStageDataList[0] as StageDataListItem);
     setNavModelList(productList[0].parts.map(o => ({
@@ -469,11 +481,13 @@ function App() {
     onInitTabs(productList);
     initializeFileDataList(productPartList);
     stage.stageRef.current.setPosition({
-      x: Math.max(Math.ceil(stage.stageRef.current.width() - 1672) / 2, 0),
-      y: Math.max(Math.ceil(stage.stageRef.current.height() - 760) / 2, 0),
+      x: Math.max(Math.ceil(stage.stageRef.current.width() - (window.innerWidth - settingBarRect.width)) / 2, 0),
+      y: 0,
     });
+    stage.stageRef.current.setSize({width:window.innerWidth - settingBarRect.width, height: settingBarRect.height});
+    console.log(`w=${stage.stageRef.current.width()};h=${stage.stageRef.current.height()}`);
     stage.stageRef.current.batchDraw();
-  }, [data]);
+  }, [data, settingBarRect]);
 
   useEffect(() => {
     if (currentTabId) {
@@ -490,6 +504,7 @@ function App() {
       if((settingBarRef.current && !settingBarRef.current.contains(e.target as any)) 
         && (settingSideBarRef.current && !settingSideBarRef.current.contains(e.target as any))){
         setActiveMenu(SubmenuType.Default);
+        emit(EventName.CLIPART_BAR_OPEN_EVENT, false);
       }
     });
   }, [settingBarRef, settingSideBarRef]);
@@ -498,7 +513,7 @@ function App() {
 
   return (
     <>
-      <Layout footer={footer} navBar={navBar} settingBar={settingBar} subMenu={subMenu}>
+      <Layout settingBarKey={settingBarKey} footer={footer} navBar={navBar} settingBar={settingBar} subMenu={subMenu}>
         {/* {hotkeyModal} */}
         <View onSelect={onSelectItem} stage={stage}>
           {stageData.length

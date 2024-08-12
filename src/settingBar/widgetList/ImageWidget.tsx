@@ -15,39 +15,66 @@ import Drag from "../../util/Drag";
 import TRIGGER from "../../config/trigger";
 import useImageAsset from "../../hook/useImageAsset";
 import useI18n from "../../hook/usei18n";
-import { useDropzone } from "react-dropzone";
+import { DropEvent, FileRejection, useDropzone } from "react-dropzone";
 import "react-dropzone/examples/theme.css";
+import { StageData } from "../../redux/currentStageData";
 
 export const IMAGE_LIST_KEY = "importedImage";
 
-const ImageWidget: React.FC = () => {
-  const { setImageAsset, getAllImageAsset } = useImageAsset();
+export type ImageWidgetProps = {
+  onCompleted?: (data: StageData) => void;
+};
+
+const ImageWidget: React.FC<ImageWidgetProps> = ({onCompleted}) => {
   const { getTranslation } = useI18n();
-  const [imageAssetList, setImageAssetList] = useState(() => {
-    if (getAllImageAsset().length) {
-      return [...getAllImageAsset()!];
-    }
-    setImageAsset(presetImageList);
-    return [...presetImageList];
-  });
-  const { getRootProps, getInputProps } = useDropzone();
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    acceptedFiles.forEach((file) => {
+      onCompleted({
+        id: nanoid(),
+        attrs: {
+          name: "imported image",
+          "data-item-type": "image",
+          x: 0,
+          y: 0,
+          width: 100,
+          height: 100,
+          src: URL.createObjectURL(file),
+          zIndex: -1,
+          brightness: 0,
+          draggable: true,
+          updatedAt: Date.now(),
+        },
+        className: "sample-image",
+        children: [],
+      });
+    });
+  }, []);
+  const { getRootProps, getInputProps } = useDropzone({onDrop});
 
   const uploadImage = () => {
     const fileReader = new FileReader();
-    fileReader.onload = () => {
-      setImageAssetList((prev) => {
-        const result = [
-          {
-            type: "image",
-            id: nanoid(),
+    fileReader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        onCompleted({
+          id: nanoid(),
+          attrs: {
             name: "imported image",
-            src: fileReader.result as string,
+            "data-item-type": "image",
+            x: 0,
+            y: 0,
+            width: img.width,
+            height: img.height,
+            src: img.src,
+            zIndex: 0,
+            brightness: 0,
+            updatedAt: Date.now(),
           },
-          ...prev,
-        ];
-        setImageAsset(result);
-        return result;
-      });
+          className: "sample-image",
+          children: [],
+        });
+      };
+      img.src = e.target.result as string;
     };
     const file = document.createElement("input");
     file.type = "file";
@@ -78,20 +105,6 @@ const ImageWidget: React.FC = () => {
             style={{ marginTop: "15px", fontSize: "0.8rem" }}
           >
             {getTranslation("widget", "uploadPhoto", "name")}
-            {/* <Button
-              className={[
-                colorStyles.transparentDarkColorTheme,
-                borderStyles.none,
-                displayStyles["inline-block"],
-                sizeStyles.width25,
-                spaceStyles.p0,
-                spaceStyles.ml1rem,
-                alignStyles["text-left"],
-              ].join(" ")}
-              onClick={uploadImage}
-            >
-              <i className="bi-plus" />
-            </Button> */}
           </h6>
         </Row>
         <div>
@@ -110,12 +123,15 @@ const ImageWidget: React.FC = () => {
                 },
               })}
             >
-              <input {...getInputProps()} />
-              <p>+</p>
+              <input {...getInputProps()}/>
+              <p className="m-auto">+</p>
             </div>
           </section>
-          <p className={[positionStyles["toolbar-section-text"]].join(" ")}>
-            {"(JPG,PNG,EPS,AI,& PDF) Max 5 MB"}
+          <p style={{fontSize: "0.8rem", fontWeight: "300", fontStyle: "italic", color: "#9798A4", marginBottom: "0"}}>
+            (JPG,PNG,EPS,AI,& PDF)
+          </p>
+          <p style={{fontSize: "0.8rem", fontWeight: "300", fontStyle: "italic", color: "#9798A4", marginBottom: "0"}}>
+            Max 5 MB
           </p>
         </div>
       </Col>

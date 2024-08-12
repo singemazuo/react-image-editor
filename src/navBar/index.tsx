@@ -1,12 +1,11 @@
 import React from "react";
-import { ButtonGroup, ButtonToolbar, Col, Nav, Row, Stack } from "react-bootstrap";
 import colorStyles from "../style/color.module.css";
 import alignStyles from "../style/align.module.css";
-import positionStyles from "../style/position.module.css";
 import sizeStyles from "../style/size.module.css";
 import borderStyles from "../style/border.module.css";
 import NavBarItem from "./NavBarItem";
 import { NavBarItemKind } from "./NavBarButton";
+import themeStyles from "../style/theme.module.css";
 
 type NavBarProps = {
   items: NavBarItemKind[];
@@ -55,7 +54,7 @@ const NavBar: React.FC<NavBarProps> = ({ items, onClick, onSelect }) => {
     };
     return (
       items && (
-        <div className={[...classes,"p-2","flex-column","d-flex"].join(" ")}>
+        <div className={[...classes,"p-2","flex-column","d-flex",themeStyles["navbar-parts"]].join(" ")}>
           {items.map((o, i) => (
             <>
               <NavBarItem data={o} onClick={(id) => onItemClick(id, i)}></NavBarItem>

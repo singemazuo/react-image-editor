@@ -1,4 +1,4 @@
-import React, { MutableRefObject } from "react";
+import React, { MutableRefObject, RefObject } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import sizeStyles from "../style/size.module.css";
 import colorStyles from "../style/color.module.css";
@@ -6,21 +6,19 @@ import alignStyles from "../style/align.module.css";
 import positionStyles from "../style/position.module.css";
 import overflowStyles from "../style/overflow.module.css";
 import themeStyles from "../style/theme.module.css";
-import { ClipartDrawer } from "../settingBar/drawer";
 import WidgetSideBar, { SubmenuType } from "../settingBar/sideBar";
-import { SettingSideBar } from "../settingBar";
+import useCompRect from "../hook/useComp/useCompRect";
+import { EventName } from "../config/constants";
+import useEvent from "../hook/useEvent";
 
 type LayoutProps = {
   header?: React.ReactNode;
   navBar?: React.ReactNode;
   settingBar?: React.ReactNode;
   footer?: React.ReactNode;
-  subMenu?: (target:MutableRefObject<HTMLElement|null>) => React.ReactNode;
+  subMenu?: () => React.ReactNode;
   children: React.ReactNode;
-};
-
-const commonStyle = {
-  backgroundColor: '#E3E6E8',
+  settingBarKey?: string;
 };
 
 const Layout: React.FC<LayoutProps> = ({
@@ -30,10 +28,17 @@ const Layout: React.FC<LayoutProps> = ({
   children,
   footer,
   subMenu,
+  settingBarKey,
 }) => {
   const [ show, setShow ] = React.useState(true);
   const [ activeMenu, setActiveMenu ] = React.useState(SubmenuType.Default);
-  const target = React.useRef(null);
+  const settingBarEvent = useCompRect(EventName.SETTING_BAR_EVENT);
+  const [ backgroundColorStyle, setBackgroundColorStyle ] = React.useState({backgroundColor: "#E3E6E8"});
+  const { on } = useEvent();
+
+  on(EventName.PRODUCT_PREVIEW_LOADED_EVENT, img => {
+    setBackgroundColorStyle({backgroundColor: `#${img.color}`});
+  });
   return(
     <div
       className={[sizeStyles.height100, sizeStyles.width100, overflowStyles.hide].join(" ")}
@@ -60,7 +65,7 @@ const Layout: React.FC<LayoutProps> = ({
       >
         <div className="d-flex">
           <div
-            ref={target}
+            ref={settingBarEvent.ref}
             className={[
               sizeStyles.height100,
               alignStyles.fromTopCenter,
@@ -68,18 +73,19 @@ const Layout: React.FC<LayoutProps> = ({
               "px-1",
               "flex-1",
             ].join(" ")}
+            style={{width: "200px"}}
           >
             {settingBar}
           </div>
-          {subMenu(target)}
+          {subMenu()}
           <div 
             className={[
               "flex-1",
               sizeStyles.width100,
               sizeStyles.height100,
               positionStyles.relative,
-              colorStyles.greyTheme,
             ].join(" ")}
+            style={backgroundColorStyle}
           >
             {children}
           </div>
@@ -88,10 +94,13 @@ const Layout: React.FC<LayoutProps> = ({
               "flex-1",
               "justify-content-end",
               sizeStyles.height100,
-              positionStyles.relative,
+              positionStyles.absolute,
+              positionStyles.top0,
+              positionStyles.right0,
               positionStyles.zIndex1,
+              "me-2"
             ].join(" ")}
-            style={commonStyle}
+            style={backgroundColorStyle}
           >
             {navBar}
           </div>

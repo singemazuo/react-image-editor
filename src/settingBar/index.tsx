@@ -1,5 +1,4 @@
 import React, { forwardRef, MutableRefObject, RefObject } from "react";
-import { Accordion, Container, Offcanvas } from "react-bootstrap";
 import { Node, NodeConfig } from "konva/lib/Node";
 import Widget, { WidgetKind } from "./Widget";
 import widgetList from "../config/widget.json";
@@ -16,23 +15,21 @@ import IconWidget from "./widgetList/IconWidget";
 import LineWidget from "./widgetList/LineWidget";
 import ClipartWidget from "./widgetList/ClipartWidget";
 import FontWidget from "./widgetList/font";
-import ListGroup from "react-bootstrap/ListGroup";
-import ClipartMenu from "./sideBar/ClipartMenu";
 import DefaultMenu, { DefaultMenuItemType } from "./sideBar/DefaultMenu";
 import WidgetSideBar, { SubmenuType } from "./sideBar";
 import TeamNamesWidget from "./widgetList/teamNames";
-import TextEditorMenu from "./sideBar/TextEditorMenu";
+import { StageData } from "../redux/currentStageData";
 
 export type SettingBarProps = {
   selectedItems: Node<NodeConfig>[];
   clearSelection: ReturnType<typeof useSelection>["clearSelection"];
   stageRef: ReturnType<typeof useStage>["stageRef"];
   onSubmenuClick?: (menu: SubmenuType) => void;
+  onImageUpload?: (data: StageData) => void;
 };
 
 export type SettingSideBarProps = {
   menu: SubmenuType;
-  target: MutableRefObject<HTMLElement|null>;
 };
 
 const Widgets = {
@@ -43,7 +40,7 @@ const Widgets = {
   clipart: (data: WidgetKind & SettingBarProps) => <ClipartWidget data-id="clipart" onClick={() => data.onSubmenuClick(SubmenuType.Clipart)}/>,
   font: (data: WidgetKind & SettingBarProps) => <FontWidget />,
   align: (data: WidgetKind & SettingBarProps) => <AlignWidget data={data} />,
-  image: (data: WidgetKind & SettingBarProps) => <ImageWidget />,
+  image: (data: WidgetKind & SettingBarProps) => <ImageWidget onCompleted={data.onImageUpload}/>,
   frame: (data: WidgetKind & SettingBarProps) => <FrameWidget />,
   shape: (data: WidgetKind & SettingBarProps) => <ShapeWidget />,
   text: (data: WidgetKind & SettingBarProps) => <TextWidget />,
@@ -57,7 +54,7 @@ export type WidgetIDList = keyof typeof Widgets;
 export const SettingSideBar = forwardRef<HTMLDivElement, SettingSideBarProps>((props, ref) => {
   const [ subSettingSideBar, setSubSettingSideBar ] = React.useState(null);
   const [ subSettingSideBarRef, setSubSettingSideBarRef ] = React.useState<RefObject<HTMLDivElement>>(null);
-  const { menu, target } = props;
+  const { menu } = props;
 
   const renderSubSettingSideBar = () => {
     let className = "";
@@ -70,11 +67,10 @@ export const SettingSideBar = forwardRef<HTMLDivElement, SettingSideBarProps>((p
   };
   return (
     <>
-      <WidgetSideBar ref={ref} target={target} activeMenu={menu} onDefaultMenuClick={(reference, itemType) => {
+      <WidgetSideBar ref={ref} activeMenu={menu} onDefaultMenuClick={(reference, itemType) => {
         setSubSettingSideBar(itemType);
         setSubSettingSideBarRef(reference);
-      }}>
-      </WidgetSideBar>
+      }}/>
       {subSettingSideBar && (renderSubSettingSideBar())}
     </>
   );

@@ -12,6 +12,8 @@ export type StageData = {
   attrs: OverrideItemData<any>;
   className: string;
   children?: StageData[];
+  prev?: StageData;
+  next?: StageData;
 };
 
 export const stageDataEpic: Epic = (action$, state$) =>

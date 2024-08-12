@@ -13,8 +13,13 @@ export type ProductVM = {
     parts: ProductPartVM[];
 };
 
+export type InitializeOptions = {
+    referenceWidth: number;
+    referenceHeight: number;
+};
+
 export const useData = () => {
-    const makeProduct = (products) => {
+    const makeProduct = (products, options?: InitializeOptions) => {
         let productPartList = [];
         const productList = products.map((o, i) => {
             const partList = o.product_parts.map((p, j) => ({img:p.image,priority:p.priority,active:j == 0}));
@@ -24,10 +29,10 @@ export const useData = () => {
                 attrs: {
                     name: "label-target",
                     "data-item-type": "image",
-                    x: 372,
+                    x: options ? options.referenceWidth/4 : 372,
                     y: 0,
-                    width: 862,
-                    height: 862,
+                    width: options ? options.referenceHeight :862,
+                    height: options ? options.referenceHeight: 862,
                     src: p.image,
                     zIndex: 0,
                     brightness: 0,

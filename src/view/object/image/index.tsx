@@ -7,6 +7,8 @@ import { OverrideItemProps } from "../../../hook/useItem";
 import useStage from "../../../hook/useStage";
 import { StageData } from "../../../redux/currentStageData";
 import { decimalUpToSeven } from "../../../util/decimalUpToSeven";
+import { emitColor } from "../../../util/colorPicker";
+import { EventName } from "../../../config/constants";
 
 export type ImageItemKind = {
   "data-item-type": string;
@@ -64,6 +66,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ data, e, onSelect }) => {
     const newImage = new Image();
     newImage.onload = () => {
       setImageSrc(newImage);
+      emitColor(EventName.PRODUCT_PREVIEW_LOADED_EVENT,newImage);
     };
     newImage.crossOrigin = "Anonymous";
     let source;
@@ -120,7 +123,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ data, e, onSelect }) => {
     <KonvaImage
       ref={imageRef}
       image={imageSrc}
-      onClick={onSelect}
+      onClick={attrs.draggable ?? onSelect}
       name="label-target"
       data-item-type="image"
       data-frame-type="image"

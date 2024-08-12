@@ -285,24 +285,22 @@ const View: React.FC<ViewProps> = ({
             positionStyles.left0,
           ].join(" ")}
         >
-          <Provider store={store}>
-            <Layer>
-              {children}
-              <Rect
-                name="select-box"
-                x={0}
-                y={0}
-                width={0}
-                height={0}
-                fill="skyblue"
-                opacity={0.4}
-                visible={false}
-              />
-            </Layer>
-            {container ? (
-              <Drop callback={onDropOnStage} targetDOMElement={container} />
-            ) : null}
-          </Provider>
+          <Layer className="bg-black">
+            {children}
+            <Rect
+              name="select-box"
+              x={0}
+              y={0}
+              width={0}
+              height={0}
+              fill="skyblue"
+              opacity={0.4}
+              visible={false}
+            />
+          </Layer>
+          {container ? (
+            <Drop callback={onDropOnStage} targetDOMElement={container} />
+          ) : null}
         </Stage>
       )}
     </ReactReduxContext.Consumer>

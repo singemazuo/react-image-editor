@@ -1,10 +1,10 @@
 import React from "react";
-
+import "./FontTransformWidget.css";
 
 const FontTransformWidget = ({className}) => {
     const [rotation, setRotation] = React.useState<number>(25);
     return (
-        <div className={className} style={{ padding: '0 15px' }}>
+        <div className={[className, "font-transform-widget"].join(" ")} style={{ padding: '0 15px' }}>
             <div className="mb-3">
                 <label className="form-label">Rotation</label>
                 <input 

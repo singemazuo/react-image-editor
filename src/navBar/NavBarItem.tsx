@@ -24,7 +24,7 @@ const NavBarItem: React.FC<NavBarItemProps> = ({data, onClick}) => {
         return (
             <div 
                 key={data.id}
-                className='p-1'
+                className={['p-1'].join(" ")}
                 style={{cursor:"pointer",width:"2.6rem",fontSize:".7rem"}}
             >
                 <div

@@ -1,12 +1,14 @@
-import React, { forwardRef, RefObject } from'react';
-import { Overlay } from 'react-bootstrap';
+import React, { CSSProperties, forwardRef, RefObject } from'react';
 import DefaultMenu, { DefaultMenuItemType } from './DefaultMenu';
 import ClipartMenu from './ClipartMenu';
-import { j } from 'vite/dist/node/types.d-aGj9QkWt';
+import { EventName } from '../../config/constants';
+import useCompRect from '../../hook/useComp/useCompRect';
+import borderStyles from '../../style/border.module.css';
+import useEvent from '../../hook/useEvent';
+import themeStyles from '../../style/theme.module.css';
 
 export type WidgetSideBarProps = {
     activeMenu: SubmenuType;
-    target: React.MutableRefObject<HTMLElement>;
     onDefaultMenuClick: (reference: RefObject<HTMLDivElement>, itemType: DefaultMenuItemType) => void;
 };
 
@@ -15,71 +17,81 @@ export enum SubmenuType {
     Clipart = 'clipart',
 };
 
-const WidgetSideBar = forwardRef<HTMLDivElement, WidgetSideBarProps>(({target, activeMenu, onDefaultMenuClick}, ref) => {
-    const [ styles, setStyles ] = React.useState<any>({});
+const WidgetSideBar = forwardRef<HTMLDivElement, WidgetSideBarProps>(({activeMenu, onDefaultMenuClick}, ref) => {
     const [submenuStyle, setSubmenuStyle] = React.useState({});
+    const settingBarEvent = useCompRect(EventName.SETTING_BAR_EVENT);
+    const [ settingBarRect, setSettingBarRect ] = React.useState(null);
+    const event = useEvent();
 
-    const getMenuItems = {
-        default: {
-            id: 'default',
-            title: 'Default',
-            component: <DefaultMenu onClick={onDefaultMenuClick}></DefaultMenu>,
-        },
-        clipart: {
-            id: 'clipart',
-            title: 'Clipart',
-            component: <ClipartMenu></ClipartMenu>,
+    event.on(EventName.CLIPART_BAR_OPEN_EVENT, isOpen => {
+        if(isOpen){
+            
+        }else{
+            
         }
+    });
+
+    const getMenuItems = (data, menu) => {
+        switch (menu) {
+            case "clipart":
+                return {
+                    id: 'clipart',
+                    title: 'Clipart',
+                    classes: [],
+                    style: {
+                        width: "19rem",
+                        textAlign: 'center',
+                        top: `${Math.max(0, data.y)}px`,
+                        left: `${data.x + data.width}px`,
+                        maxHeight: `calc(100vh - ${Math.max(0, data.y)}px)`,
+                        color:"#E3E6E8",
+                        position: 'fixed',
+                        zIndex: 1,
+                    }  as CSSProperties,
+                    component: <ClipartMenu></ClipartMenu>,
+                };
+                default:
+                case "default":
+                    return {
+                        id: 'default',
+                        title: 'Default',
+                        classes: [
+                            borderStyles["roundBottomRightSM-5"],
+                        ],
+                        style: {
+                            width: "69px",
+                            textAlign: 'center',
+                            top: `${Math.max(0, data.y)}px`,
+                            left: `${data.x + data.width}px`,
+                            maxHeight: `calc(100vh - ${Math.max(0, data.y)}px)`,
+                            color:"#E3E6E8",
+                            position: 'fixed',
+                            zIndex: 1,
+                        } as CSSProperties,
+                        component: <DefaultMenu onClick={onDefaultMenuClick}></DefaultMenu>,
+                    };
+        };
     }
 
     const onMenuClick = () => {
-
+        
     };
 
-    React.useEffect(() => {
-        if (activeMenu !== null && target.current) {
-            const menuRect = target.current.getBoundingClientRect();
-            const activeItem = target.current.querySelector(`[data-id="${activeMenu}"]`);
-            if (activeItem) {
-                setSubmenuStyle({
-                    backgroundColor: '#E3E6E8',
-                    textAlign: 'center',
-                    top: `${Math.max(0, menuRect.top)}px`,
-                    left: `${menuRect.right}px + 3px`,
-                    maxHeight: `calc(100vh - ${Math.max(0, menuRect.top)}px)`,
-                });
-            }else if(activeMenu === "default"){
-                setSubmenuStyle({
-                    width: "5rem",
-                    backgroundColor: '#E3E6E8',
-                    textAlign: 'center',
-                    top: `${Math.max(0, menuRect.top)}px`,
-                    left: `${menuRect.right}px`,
-                    maxHeight: `calc(100vh - ${Math.max(0, menuRect.top)}px)`,
-                    position: 'fixed',
-                    zIndex: 1,
-                });
-            }else if(activeMenu === "clipart"){
-                setSubmenuStyle({
-                    width: "19rem",
-                    backgroundColor: '#3D3D3D',
-                    textAlign: 'center',
-                    top: `${Math.max(0, menuRect.top)}px`,
-                    left: `${menuRect.right}px`,
-                    maxHeight: `calc(100vh - ${Math.max(0, menuRect.top)}px)`,
-                    color:"#E3E6E8",
-                    position: 'fixed',
-                    zIndex: 1,
-                });
+    settingBarEvent.onEvent((data) => {
+        setSettingBarRect(data);
+    });
 
-            }
+    const render = () => {
+        if(settingBarRect && activeMenu){
+            return (
+                <div ref={ref} className={["overflow-hidden overflow-y-auto", themeStyles["setting-sidbar"]].concat(getMenuItems(settingBarRect, activeMenu).classes).join(" ")} style={getMenuItems(settingBarRect, activeMenu).style}>
+                    {getMenuItems(settingBarRect, activeMenu).component}
+                </div>
+            );
         }
-    }, [activeMenu]);
-    return (
-        <div ref={ref} className="overflow-hidden overflow-y-auto" style={submenuStyle}>
-            {getMenuItems[activeMenu].component}
-        </div>
-    );
+        return <></>;
+    };
+    return render();
 });
 
 export default WidgetSideBar;
