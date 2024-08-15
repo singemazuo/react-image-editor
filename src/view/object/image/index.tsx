@@ -66,7 +66,9 @@ const ImageItem: React.FC<ImageItemProps> = ({ data, e, onSelect }) => {
     const newImage = new Image();
     newImage.onload = () => {
       setImageSrc(newImage);
-      emitColor(EventName.PRODUCT_PREVIEW_LOADED_EVENT,newImage);
+      if(attrs.default){// TODO: check if this is the correct way to handle this
+        emitColor(EventName.PRODUCT_PREVIEW_LOADED_EVENT,newImage);
+      }
     };
     newImage.crossOrigin = "Anonymous";
     let source;

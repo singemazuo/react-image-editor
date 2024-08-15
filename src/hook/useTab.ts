@@ -13,7 +13,7 @@ const useTab = (
   transformer: ReturnType<typeof useTransformer>,
   clearHistory: ReturnType<typeof useWorkHistory>["clearHistory"],
 ) => {
-  const [tabList, setTabList] = useState<TabKind[]>([]);
+  const [ tabList, setTabList ] = useState<TabKind[]>([]);
   const { createFileData, removeFileData, changeStageData } =
     useStageDataList();
   const { clearSelection } = useSelection(transformer);
@@ -29,6 +29,7 @@ const useTab = (
       prev.map((file) => ({
         id: file.id,
         active: currentActiveFileId === file.id,
+        name: file.name,
         preview: file.preview ? file.preview : undefined,
         parts: file.parts,
       })),
@@ -46,6 +47,7 @@ const useTab = (
       prev.map((file) => ({
         id: file.id,
         active: tabId === file.id,
+        name: file.name,
         preview: file.preview ?? undefined,
         parts: file.parts,
       })),
@@ -79,6 +81,7 @@ const useTab = (
       ...Object.values(prev).map(tab => ({
         ...tab,
         active: false,
+        name: tab.name,
         parts: tab.parts,
       })),
       {
@@ -113,6 +116,7 @@ const useTab = (
           return {
             id: tab.id,
             active: tab.id === nextTabId,
+            name: tab.name,
             preview: tab.preview ?? undefined,
             parts: tab.parts,
           };

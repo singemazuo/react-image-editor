@@ -18,6 +18,7 @@ export type NavItemKind = {
 export type TabKind = {
   id: string;
   active: boolean;
+  name?: string;
   preview?: string;
   parts?: NavItemKind[];
 };

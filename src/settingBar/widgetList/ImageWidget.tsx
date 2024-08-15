@@ -39,7 +39,7 @@ const ImageWidget: React.FC<ImageWidgetProps> = ({onCompleted}) => {
           width: 100,
           height: 100,
           src: URL.createObjectURL(file),
-          zIndex: -1,
+          zIndex: 2,
           brightness: 0,
           draggable: true,
           updatedAt: Date.now(),

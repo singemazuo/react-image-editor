@@ -10,6 +10,7 @@ import WidgetSideBar, { SubmenuType } from "../settingBar/sideBar";
 import useCompRect from "../hook/useComp/useCompRect";
 import { EventName } from "../config/constants";
 import useEvent from "../hook/useEvent";
+import CartView from "../cart";
 
 type LayoutProps = {
   header?: React.ReactNode;
@@ -58,7 +59,7 @@ const Layout: React.FC<LayoutProps> = ({
       <Row
         xs={12}
         className={[
-          sizeStyles.height90,
+          sizeStyles.height100,
           positionStyles.relative,
           positionStyles.zIndex1,
         ].join(" ")}
@@ -138,7 +139,8 @@ const Layout: React.FC<LayoutProps> = ({
           {navBar}
         </Col> */}
       </Row>
-      {footer && (
+      {footer}
+      {/* {footer && (
         <Row
           xs={12}
           className={[
@@ -151,7 +153,7 @@ const Layout: React.FC<LayoutProps> = ({
         >
           {footer}
         </Row>
-      )}
+      )} */}
     </div>
   );
 };

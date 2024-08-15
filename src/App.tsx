@@ -33,6 +33,7 @@ import DecorationAreaItem, {
 } from "./view/object/decoration";
 import useModal from "./hook/useModal";
 import hotkeyList from "./config/hotkey.json";
+import cart from "./mock/cart.json";
 import useHotkeyFunc from "./hook/useHotkeyFunc";
 import useWorkHistory from "./hook/useWorkHistory";
 import useI18n from "./hook/usei18n";
@@ -47,6 +48,7 @@ import { SubmenuType } from "./settingBar/sideBar";
 import { EventName } from "./config/constants";
 import useCompRect from "./hook/useComp/useCompRect";
 import useEvent from "./hook/useEvent";
+import CartView from "./cart";
 
 const GET_CART = gql`
   query {
@@ -82,6 +84,8 @@ function App() {
   const [ settingBarKey ] = useState<string>(guid());
   const [ activeMenu, setActiveMenu ] = useState<SubmenuType>(SubmenuType.Default);
   const [ settingBarRect, setSettingBarRect ] = useState<{x: number, y: number, width: number, height: number} | null>(null);
+  const [ mainEditorRect, setMainEditorRect ] = useState<{x: number, y: number, width: number, height: number} | null>(null);
+
   const { data, loading, error } = useQuery(GET_CART);
   const settingBarRef = useRef<HTMLDivElement | null>(null);
   const settingSideBarRef = useRef<HTMLDivElement | null>(null);
@@ -167,8 +171,10 @@ function App() {
   );
 
   const onImageUpload = (data: StageData) => {
+    let newItem = {...data};
+    newItem.attrs.x = mainEditorRect.x;
+    newItem.attrs.y = mainEditorRect.y;
     createItem(data);
-    console.log(stageData);
   };
 
   const header = (
@@ -198,30 +204,31 @@ function App() {
   };
 
   const footer = (
-    <Footer>
-      <TabGroup
-        onClickTab={(e, tab) => {
-          onClickTab(e);
-          const models = workModeList.map(o => {
-            if(o.type === "middle"){
-              return o;
-            }
-          });
-          const newModels = tab.parts.sort((a, b) => a.priority - b.priority).map((o:NavItemKind) => ({
-            id: o.id,
-            type: "top",
-            name: getNavItemName(o.priority),
-            desc: getNavItemName(o.priority),
-            icon: o.img,
-          }));
-          setNavModelList(models.concat(newModels));
-        }}
-        tabList={tabList}
-        onCreateTab={onCreateTab}
-        onDeleteTab={onDeleteTab}
-        isHeader={false}
-      />
-    </Footer>
+    // <Footer>
+    //   <TabGroup
+    //     onClickTab={(e, tab) => {
+    //       onClickTab(e);
+    //       const models = workModeList.map(o => {
+    //         if(o.type === "middle"){
+    //           return o;
+    //         }
+    //       });
+    //       const newModels = tab.parts.sort((a, b) => a.priority - b.priority).map((o:NavItemKind) => ({
+    //         id: o.id,
+    //         type: "top",
+    //         name: getNavItemName(o.priority),
+    //         desc: getNavItemName(o.priority),
+    //         icon: o.img,
+    //       }));
+    //       setNavModelList(models.concat(newModels));
+    //     }}
+    //     tabList={tabList}
+    //     onCreateTab={onCreateTab}
+    //     onDeleteTab={onDeleteTab}
+    //     isHeader={false}
+    //   />
+    // </Footer>
+    <CartView items={tabList}/>
   );
 
   const onNavItemSelect = (index: number) => {
@@ -273,29 +280,29 @@ function App() {
     <SettingSideBar ref={settingSideBarRef} menu={activeMenu}></SettingSideBar>
   );
 
-  const renderObject = (item: StageData) => {
-    switch (item.attrs["data-item-type"]) {
+  const renderObject = (data: StageData) => {
+    switch (data.attrs["data-item-type"]) {
       case "frame":
         return (
           <Frame
-            key={`frame-${item.id}`}
-            data={item as FrameProps["data"]}
+            key={`frame-${data.id}`}
+            data={data as FrameProps["data"]}
             onSelect={onSelectItem}
           />
         );
       case "image":
         return (
           <ImageItem
-            key={`image-${item.id}`}
-            data={item as ImageItemProps["data"]}
+            key={`image-${data.id}`}
+            data={data as ImageItemProps["data"]}
             onSelect={onSelectItem}
           />
         );
       case "text":
         return (
           <TextItem
-            key={`image-${item.id}`}
-            data={item as TextItemProps["data"]}
+            key={`image-${data.id}`}
+            data={data as TextItemProps["data"]}
             transformer={transformer}
             onSelect={onSelectItem}
           />
@@ -303,8 +310,8 @@ function App() {
       case "shape":
         return (
           <ShapeItem
-            key={`shape-${item.id}`}
-            data={item as ShapeItemProps["data"]}
+            key={`shape-${data.id}`}
+            data={data as ShapeItemProps["data"]}
             transformer={transformer}
             onSelect={onSelectItem}
           />
@@ -312,8 +319,8 @@ function App() {
       case "icon":
         return (
           <IconItem
-            key={`icon-${item.id}`}
-            data={item as IconItemProps["data"]}
+            key={`icon-${data.id}`}
+            data={data as IconItemProps["data"]}
             transformer={transformer}
             onSelect={onSelectItem}
           />
@@ -321,8 +328,8 @@ function App() {
       case "line":
         return (
           <LineItem
-            key={`line-${item.id}`}
-            data={item as LineItemProps["data"]}
+            key={`line-${data.id}`}
+            data={data as LineItemProps["data"]}
             transformer={transformer}
             onSelect={onSelectItem}
           />
@@ -330,8 +337,8 @@ function App() {
       case "decoration":
         return (
           <DecorationAreaItem
-            key={`decoration-${item.id}`}
-            data={item as DecorationAreaItemProps["data"]}
+            key={`decoration-${data.id}`}
+            data={data as DecorationAreaItemProps["data"]}
             transformer={transformer}
             onSelect={onSelectItem}
             getCurrentDefaultBackground={getCurrentDefaultBackground}
@@ -457,16 +464,23 @@ function App() {
   });
 
   useEffect(() => {
-    if (!data || !settingBarRect) return;
+    if (!cart.products || !settingBarRect) return;
 
     window.addEventListener("beforeunload", (e) => {
       e.preventDefault();
       e.returnValue = "";
     });
 
-    const {productList, productPartList} = makeProduct(data.getCart.products, {
-      referenceWidth: window.innerWidth - settingBarRect.width, 
-      referenceHeight: settingBarRect.height,
+    const x = (window.innerWidth - settingBarRect.width)/4;
+    const y = 0;
+    const width = window.innerWidth - settingBarRect.width;
+    const height = settingBarRect.height;
+    setMainEditorRect({x, y, width, height});
+
+    const {productList, productPartList} = makeProduct(cart.products, {
+      originalPosition: {x: x, y: y},
+      referenceWidth: width, 
+      referenceHeight: height,
     });
 
     // onCreateTab(undefined, initialStageDataList[0] as StageDataListItem);
@@ -474,7 +488,7 @@ function App() {
       id: o.id,
       type: "top",
       active: o.active,
-      name: getNavItemName(o.priority),
+      name: o.name,
       desc: getNavItemName(o.priority),
       icon: o.img,
     })));
@@ -487,7 +501,7 @@ function App() {
     stage.stageRef.current.setSize({width:window.innerWidth - settingBarRect.width, height: settingBarRect.height});
     console.log(`w=${stage.stageRef.current.width()};h=${stage.stageRef.current.height()}`);
     stage.stageRef.current.batchDraw();
-  }, [data, settingBarRect]);
+  }, [cart.products, settingBarRect]);
 
   useEffect(() => {
     if (currentTabId) {

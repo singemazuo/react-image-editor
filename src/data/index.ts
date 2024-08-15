@@ -1,3 +1,4 @@
+import React from 'react';
 import { v4 as guid } from 'uuid';
 
 export type ProductPartVM = {
@@ -10,10 +11,12 @@ export type ProductVM = {
     id: string;
     preview: string;
     active: boolean;
+    name: string;
     parts: ProductPartVM[];
 };
 
 export type InitializeOptions = {
+    originalPosition: {x:number, y: number};
     referenceWidth: number;
     referenceHeight: number;
 };
@@ -29,8 +32,8 @@ export const useData = () => {
                 attrs: {
                     name: "label-target",
                     "data-item-type": "image",
-                    x: options ? options.referenceWidth/4 : 372,
-                    y: 0,
+                    x: options ? options.originalPosition.x : 0,
+                    y: options ? options.originalPosition.y : 0,
                     width: options ? options.referenceHeight :862,
                     height: options ? options.referenceHeight: 862,
                     src: p.image,
@@ -38,6 +41,7 @@ export const useData = () => {
                     brightness: 0,
                     draggable: false,
                     visible: false,
+                    default: true,
                     updatedAt: Date.now(),
                 },
                 className: "sample-image",
@@ -50,6 +54,7 @@ export const useData = () => {
             return {
                 id: o.product_code,
                 preview: o.image,
+                name: o.product_name,
                 active: i == 0,
                 parts:partList,
             };
