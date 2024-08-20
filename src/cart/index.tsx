@@ -12,7 +12,7 @@ export type CartViewProps = {
     items: TabKind[];
     onItemAdd?: () => void;
     onItemClose?: (item: TabKind) => void;
-    onItemSelect?: (item: TabKind) => void;
+    onItemSelect?: (e: React.MouseEvent<any, MouseEvent>, item: TabKind) => void;
 };
 
 const CartView : React.FC<CartViewProps> = ({items, onItemAdd, onItemClose, onItemSelect}) => {
@@ -29,9 +29,9 @@ const CartView : React.FC<CartViewProps> = ({items, onItemAdd, onItemClose, onIt
             key: "ActivedItemKey",
             target: activedItemRef.current,
             show: showProductItems,
-            component: <ProductSelect items={items} style={itemSelectStyle} onItemAdd={onItemAdd} onItemClose={onItemClose} onItemSelect={(item) => {
+            component: <ProductSelect items={items} style={itemSelectStyle} onItemAdd={onItemAdd} onItemClose={onItemClose} onItemSelect={(e, item) => {
                 if(onItemSelect) {
-                    onItemSelect(item);
+                    onItemSelect(e, item);
                 }
             }}/>
         },

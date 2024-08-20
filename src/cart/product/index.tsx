@@ -9,7 +9,7 @@ export type ProductSelectProps = {
     items: TabKind[];
     style?: CSSProperties;
     onItemAdd?: () => void;
-    onItemSelect?: (item: TabKind) => void;
+    onItemSelect?: (e: React.MouseEvent<any, MouseEvent>,item: TabKind) => void;
     onItemClose?: (item: TabKind) => void;
 };
 
@@ -29,15 +29,17 @@ const ProductSelect: React.FC<ProductSelectProps> = ({items, style, onItemAdd, o
                     return (
                         <ListGroup.Item
                             action
-                            key={item.id} 
+                            key={`product-item-${item.id}`} 
                             as="li" 
-                            className="product-item" 
+                            className="product-item"
+                            data-file-id={item.id}
+                            data-active={item.active}
                             onMouseEnter={() => toggleShowClose(index)} 
                             onMouseLeave={() => toggleShowClose(-1)}
                             onClick={(e) => {
                                 if(closeRef.current && !closeRef.current.contains(e.target)){
                                     if(onItemSelect) {
-                                        onItemSelect(item);
+                                        onItemSelect(e, item);
                                     }
                                 }
                             }}

@@ -213,14 +213,14 @@ function App() {
     //           return o;
     //         }
     //       });
-    //       const newModels = tab.parts.sort((a, b) => a.priority - b.priority).map((o:NavItemKind) => ({
-    //         id: o.id,
-    //         type: "top",
-    //         name: getNavItemName(o.priority),
-    //         desc: getNavItemName(o.priority),
-    //         icon: o.img,
-    //       }));
-    //       setNavModelList(models.concat(newModels));
+          // const newModels = tab.parts.sort((a, b) => a.priority - b.priority).map((o:NavItemKind) => ({
+          //   id: o.id,
+          //   type: "top",
+          //   name: getNavItemName(o.priority),
+          //   desc: getNavItemName(o.priority),
+          //   icon: o.img,
+          // }));
+          // setNavModelList(models.concat(newModels));
     //     }}
     //     tabList={tabList}
     //     onCreateTab={onCreateTab}
@@ -228,7 +228,23 @@ function App() {
     //     isHeader={false}
     //   />
     // </Footer>
-    <CartView items={tabList}/>
+    <CartView items={tabList} onItemSelect={(e, tab) => {
+      onClickTab(e);
+      const models = workModeList.map(o => {
+        if(o.type === "middle"){
+          return o;
+        }
+
+        const newModels = tab.parts.sort((a, b) => a.priority - b.priority).map((o:NavItemKind) => ({
+          id: o.id,
+          type: "top",
+          name: getNavItemName(o.priority),
+          desc: getNavItemName(o.priority),
+          icon: o.img,
+        }));
+        setNavModelList(models.concat(newModels));
+      });
+    }}/>
   );
 
   const onNavItemSelect = (index: number) => {
