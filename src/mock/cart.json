@@ -59,6 +59,38 @@
       "image_id": {
         "$oid": "66a1300c998e24b698dd05e8"
       }
+    },
+    {
+      "_id": {
+        "$oid": "669e7c2c96867fddab68f882"
+      },
+      "image": "https://www.dnaswag.ca/rshared/pdimages/1172468/4/prod.jpg?b=14431218&v=1720485250p0",
+      "product_code": "Y355",
+      "product_name": "ATC PRO TEAM YOUTH SHORTS",
+      "product_details_url": "https://www.dnaswag.ca/manage/supplier_products/edit/219175973?_dnpps=W3siayI6ImJsYW5rX3Byb2R1Y3RzIiwicCI6eyJwZXJfcGFnZSI6MTUsInQiOjAsImMiOjAsInMiOjAsImIiOjAsInYiOjAsIm4iOiIiLCJkIjoiIn0sIm4iOnt9fV0%3D&pid=1172468&sid=170608",
+      "product_supplier": "SanMar Canada",
+      "product_group": "Apparel",
+      "blank": "$21.54",
+      "dtg": "N/A",
+      "sub": "N/A",
+      "emb": "$28.49",
+      "scr": "$27.79",
+      "trf": "$23.54",
+      "dtf": "$26.54",
+      "uuid": "a84ce119-ac51-4907-a86a-8c50cb38b0b7",
+      "product_parts": [
+        {
+            "_id": {
+                "$oid": "669fc0615edbe4659ff73361"
+            },
+            "uuid": "523061fe-0ed6-4203-8158-2b69ff56ee87",
+            "image": "https://www.dnaswag.ca/pimages/4995023/8740543/12/1/prod.jpg?602063&pt=1404258&ts=1710529304",
+            "priority": 0
+        }
+      ],
+      "image_id": {
+        "$oid": "66a1300f998e24b698dd05f1"
+      }
     }
   ]
 }

@@ -6,55 +6,88 @@ import ProductSelect from "./product";
 import { TabKind } from "../tab/Tab";
 import useEvent from "../hook/useEvent";
 import { EventName } from "../config/constants";
+import ColorPicker from "./color";
 
 export type CartViewProps = {
     items: TabKind[];
+    onItemAdd?: () => void;
+    onItemClose?: (item: TabKind) => void;
+    onItemSelect?: (item: TabKind) => void;
 };
 
-const CartView : React.FC<CartViewProps> = ({items}) => {
+const CartView : React.FC<CartViewProps> = ({items, onItemAdd, onItemClose, onItemSelect}) => {
     const { getTranslation } = useI18n();
     const [ showProductItems, toggleProductItems ] = React.useState(false);
+    const [ showColorPicker, toggleColorPicker ] = React.useState(false);
     const activedItemRef = useRef(null);
-    const [ itemSelectStyle, setItemSelectStyle ] = React.useState({} as CSSProperties);
+    const activedColorRef = useRef(null);
+    const [ itemSelectStyle, setItemSelectStyle ] = React.useState({height: "19rem"} as CSSProperties);
+    const [ colorPickerStyle, setColorPickerStyle ] = React.useState({} as CSSProperties);
 
-    const onSelectedClick = () => {
-        toggleProductItems(!showProductItems);
-    };
+    const overlays = [
+        {
+            key: "ActivedItemKey",
+            target: activedItemRef.current,
+            show: showProductItems,
+            component: <ProductSelect items={items} style={itemSelectStyle} onItemAdd={onItemAdd} onItemClose={onItemClose} onItemSelect={(item) => {
+                if(onItemSelect) {
+                    onItemSelect(item);
+                }
+            }}/>
+        },
+        {
+            key: "ActivedColorKey",
+            target: activedColorRef.current,
+            show: showColorPicker,
+            component: <ColorPicker activedProduct={items.find(o => o.active)} style={colorPickerStyle}/>
+        }
+    ];
 
     // const callback = (entries) => {
-    //     const { top, left, bottom, right } = activedItemRef.current.getBoundingClientRect();
-    //     setItemSelectStyle({width: `${activedItemRef.current.offsetWidth}px`, height: `18rem`, position: 'absolute', bottom: `${top}px`, left: `${left}px`, zIndex: 3, backgroundColor: 'red'});
+    //     entries.forEach((entry) => {
+    //         if(entry.isIntersecting) {
+    //             setItemSelectStyle({width: `${entry.boundingClientRect.width}px`, ...itemSelectStyle});
+    //         }
+    //     });
     // };
 
-    // React.useEffect(() => {
-    //     const observer = new IntersectionObserver(callback);
-    //     if(activedItemRef.current) observer.observe(activedItemRef.current);
+    document.addEventListener("mousedown", (e) => {
+        if(activedItemRef.current && !activedItemRef.current.contains(e.target as Node)) {
+            toggleProductItems(false);
+        }
+        if(activedColorRef.current && !activedColorRef.current.contains(e.target as Node)) {
+            toggleColorPicker(false);
+        }
+    });
 
-    //     return () => {
-    //         if(activedItemRef.current) observer.unobserve(activedItemRef.current);
-    //     };
-    // }, []);
+    React.useEffect(() => {
+        if(items.length <= 0) return;
+        
+        setItemSelectStyle({width: `${activedItemRef.current.offsetWidth}px`, ...itemSelectStyle});
+        setColorPickerStyle({width: `${activedItemRef.current.offsetWidth}px`, transform: `translateX(45%)`,...colorPickerStyle});
+    }, [items]);
 
     const activedItemRender = () => (
         <label>{items.length > 0 && items.find(o => o.active).name}</label>
     );
     return (
         <div>
-            {/* { showProductItems && <ProductSelect items={items} style={itemSelectStyle}/> } */}
-            <Overlay target={activedItemRef.current} show={showProductItems} placement="top">
-                {({
-                    placement: _placement,
-                    arrowProps: _arrowProps,
-                    show: _show,
-                    popper: _popper,
-                    hasDoneInitialMeasure: _hasDoneInitialMeasure,
-                    ...props
-                }) => (
-                    <div {...props}>Test!Test!Test!Test!Test!Test!</div>
-                )}
-            </Overlay>
+            {overlays.map((item) => {
+                return <Overlay target={item.target} show={item.show} placement="top">
+                    {({
+                        placement: _placement,
+                        arrowProps: _arrowProps,
+                        show: _show,
+                        popper: _popper,
+                        hasDoneInitialMeasure: _hasDoneInitialMeasure,
+                        ...props
+                    }) => (
+                        <div {...props} style={{zIndex: 1, ...props.style}}>{item.component}</div>
+                    )}
+                </Overlay>
+            })}
             <div className="d-flex flex-row cart-view">
-                <section className="color-section">
+                <section className="color-section" ref={activedColorRef} onClick={() => toggleColorPicker(!showColorPicker)}>
                     <div className="roundLG bg-white"></div>
                 </section>
                 <section className="products-selector" ref={activedItemRef} onClick={() => toggleProductItems(!showProductItems)}>
