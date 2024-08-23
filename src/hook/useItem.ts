@@ -12,6 +12,7 @@ export type ItemData = {
   height: number;
   fill: string;
   draggable: boolean;
+  default?: boolean;
 } & Record<string, any>;
 
 export type ItemProps = {
@@ -25,6 +26,7 @@ export type OverrideItemProps<T> = Omit<ItemProps, keyof T> & T & Pick<ITEMS_CON
 export type OverrideItemData<T> = Omit<ItemData, keyof T> & T;
 
 export type ITEMS_CONTEXT = {
+  originalPosition: { x: number; y: number };
   selectedItems: Konva.Node[];
   onCreate: (newItem: StageData) => void;
   onDelete: (targetItemId: string | string[]) => void;
