@@ -4,15 +4,7 @@
     "name": "Image"
   },
   {
-    "id": "clipart",
-    "name": "Browse Clipart"
-  },
-  {
     "id": "font",
     "name": "Font"
-  },
-  {
-    "id": "teamNames",
-    "name": "Add Team Names"
   }
 ]

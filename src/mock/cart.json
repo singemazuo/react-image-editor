@@ -85,7 +85,19 @@
             },
             "uuid": "523061fe-0ed6-4203-8158-2b69ff56ee87",
             "image": "https://www.dnaswag.ca/pimages/4995023/8740543/12/1/prod.jpg?602063&pt=1404258&ts=1710529304",
-            "priority": 0
+            "priority": 0,
+            "print_areas": [
+              {
+                "_id": {
+                  "$oid": "66c887ee7965da5e7bd63ed7"
+                },
+                "x": 0,
+                "y": 0,
+                "w": 400,
+                "h": 400,
+                "priority": 1000
+              }
+            ]
         }
       ],
       "image_id": {

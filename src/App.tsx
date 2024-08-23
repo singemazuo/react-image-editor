@@ -171,9 +171,9 @@ function App() {
   );
 
   const onImageUpload = (data: StageData) => {
-    let newItem = {...data};
-    newItem.attrs.x = mainEditorRect.x;
-    newItem.attrs.y = mainEditorRect.y;
+    // let newItem = {...data};
+    // newItem.attrs.x = mainEditorRect.x;
+    // newItem.attrs.y = mainEditorRect.y;
     createItem(data);
   };
 

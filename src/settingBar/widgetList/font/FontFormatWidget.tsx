@@ -20,8 +20,7 @@ const FontFormatWidget = ({ className }) => {
     return (
         <div className={className} style={{ padding: '0 18px 1rem 18px', margin: '1rem 0 0 0', display: 'block' }}>
             <div>
-                <label className="form-label" style={{textAlign: 'left', width: '100%'}}>Font</label>
-                <Dropdown as="div" style={{ margin: "0 0 1px 0", backgroundColor: "rgba(255,255,255,0)" }}>
+                <Dropdown as="div" style={{ margin: "0 0 1px 0", backgroundColor: "rgba(255,255,255,0)", cursor: "pointer" }}>
                     <Dropdown.Toggle as="div">{font}</Dropdown.Toggle>
                     <Dropdown.Menu as="div">
                         <Dropdown.Item as="div" active>Helvetica</Dropdown.Item>

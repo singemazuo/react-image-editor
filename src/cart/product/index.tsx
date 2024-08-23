@@ -29,7 +29,7 @@ const ProductSelect: React.FC<ProductSelectProps> = ({items, style, onItemAdd, o
                     return (
                         <ListGroup.Item
                             action
-                            key={`product-item-${item.id}`} 
+                            key={`product-item-${item.id}`}
                             as="li" 
                             className="product-item"
                             data-file-id={item.id}
