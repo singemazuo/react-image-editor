@@ -27,6 +27,25 @@ export const useData = () => {
         const productList = products.map((o, i) => {
             const partList = o.product_parts.map((p, j) => ({img:p.image,priority:p.priority,active:j == 0}));
             const p = o.product_parts[0];
+            const print_area = p.print_area ? {
+                id: guid(),
+                attrs: {
+                    name: "label-target",
+                    "data-item-type": "frame",
+                    x: options ? options.originalPosition.x + p.print_area.x : 0,
+                    y: options ? options.originalPosition.y + p.print_area.y : 0,
+                    width: options ? p.print_area.w :862,
+                    height: options ? p.print_area.h: 862,
+                    zIndex: 1000,
+                    brightness: 0,
+                    draggable: false,
+                    visible: false,
+                    default: true,
+                    updatedAt: Date.now(),
+                },
+                className: "sample-image",
+                children: [],
+            }: null;
             const part = {
                 id: guid(),
                 attrs: {
@@ -47,10 +66,12 @@ export const useData = () => {
                 className: "sample-image",
                 children: [],
             };
-            productPartList.push({
-                id: o.product_code,
-                data: [part]
-            });
+            if(print_area !== null){
+                productPartList = [...productPartList, {
+                    id: o.product_code,
+                    data: [part, print_area]
+                }];
+            }
             return {
                 id: o.product_code,
                 preview: o.image,
