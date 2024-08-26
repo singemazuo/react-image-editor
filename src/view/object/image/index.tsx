@@ -28,7 +28,7 @@ export const filterMap: { [name: string]: Filter } = {
   Grayscale: Konva.Filters.Grayscale,
 };
 
-const ImageItem: React.FC<ImageItemProps> = ({ data, e, onSelect }) => {
+const ImageItem: React.FC<ImageItemProps> = ({ data, e, onSelect, referenceRect }) => {
   const { attrs } = data;
   const imageRef = useRef() as RefObject<Konva.Image>;
   const [imageSrc, setImageSrc] = useState<CanvasImageSource>(new Image());
@@ -125,13 +125,13 @@ const ImageItem: React.FC<ImageItemProps> = ({ data, e, onSelect }) => {
     <KonvaImage
       ref={imageRef}
       image={imageSrc}
-      onClick={attrs.draggable ?? onSelect}
+      onClick={attrs.draggable && onSelect}
       name="label-target"
       data-item-type="image"
       data-frame-type="image"
       id={data.id}
-      x={attrs.x}
-      y={attrs.y}
+      x={referenceRect ? referenceRect.x + (referenceRect.width - attrs.width)/2 : attrs.x}
+      y={referenceRect ? referenceRect.y + (referenceRect.height - attrs.height)/2 : attrs.y}
       width={attrs.width}
       height={attrs.height}
       scaleX={attrs.scaleX}

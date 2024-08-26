@@ -14,6 +14,7 @@ export type StageData = {
   children?: StageData[];
   prev?: StageData;
   next?: StageData;
+  refRect?: {x: number, y: number, width: number, height: number};
 };
 
 export const stageDataEpic: Epic = (action$, state$) =>

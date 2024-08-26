@@ -49,6 +49,7 @@ import { EventName } from "./config/constants";
 import useCompRect from "./hook/useComp/useCompRect";
 import useEvent from "./hook/useEvent";
 import CartView from "./cart";
+import PrintAreaItem, { PrintAreaItemProps } from "./view/object/print";
 
 const GET_CART = gql`
   query {
@@ -82,6 +83,7 @@ function App() {
   const [ past, setPast ] = useState<StageData[][]>([]);
   const [ future, setFuture ] = useState<StageData[][]>([]);
   const [ settingBarKey ] = useState<string>(guid());
+  const [ printArea, setPrintArea ] = useState<{x: number, y: number, width: number, height: number} | null>(null);
   const [ activeMenu, setActiveMenu ] = useState<SubmenuType>(SubmenuType.Default);
   const [ settingBarRect, setSettingBarRect ] = useState<{x: number, y: number, width: number, height: number} | null>(null);
   const [ mainEditorRect, setMainEditorRect ] = useState<{x: number, y: number, width: number, height: number} | null>(null);
@@ -296,7 +298,7 @@ function App() {
     <SettingSideBar ref={settingSideBarRef} menu={activeMenu}></SettingSideBar>
   );
 
-  const renderObject = (data: StageData) => {
+  const renderObject = (data: StageData, printArea?:{x: number, y: number, width: number, height: number}) => {
     switch (data.attrs["data-item-type"]) {
       case "frame":
         return (
@@ -312,6 +314,7 @@ function App() {
             key={`image-${data.id}`}
             data={data as ImageItemProps["data"]}
             onSelect={onSelectItem}
+            referenceRect={printArea}
           />
         );
       case "text":
@@ -352,12 +355,16 @@ function App() {
         );
       case "decoration":
         return (
-          <DecorationAreaItem
-            key={`decoration-${data.id}`}
-            data={data as DecorationAreaItemProps["data"]}
-            transformer={transformer}
+          // <DecorationAreaItem
+          //   key={`decoration-${data.id}`}
+          //   data={data as DecorationAreaItemProps["data"]}
+          //   transformer={transformer}
+          //   onSelect={onSelectItem}
+          //   getCurrentDefaultBackground={getCurrentDefaultBackground}
+          // />
+          <PrintAreaItem
+            data={data as PrintAreaItemProps["data"]}
             onSelect={onSelectItem}
-            getCurrentDefaultBackground={getCurrentDefaultBackground}
           />
         );
       default:
@@ -526,6 +533,17 @@ function App() {
         data: stageData,
       });
     }
+
+    const firstPrint = sortedStageData.find(o => o.attrs["data-item-type"] === "decoration");
+    if(firstPrint){
+      setPrintArea({
+        x: firstPrint.attrs.x,
+        y: firstPrint.attrs.y,
+        width: firstPrint.attrs.width,
+        height: firstPrint.attrs.height,
+      });
+    }
+
     recordPast(stageData);
   }, [stageData]);
 
@@ -547,7 +565,7 @@ function App() {
         {/* {hotkeyModal} */}
         <View onSelect={onSelectItem} stage={stage}>
           {stageData.length
-            ? sortedStageData.map((item) => renderObject(item))
+            ? sortedStageData.map((item, index) => renderObject(item, index !== 0 ? printArea : undefined))
             : null}
           <Transformer
             ref={transformer.transformerRef}

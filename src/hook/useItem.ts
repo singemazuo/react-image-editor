@@ -19,6 +19,7 @@ export type ItemProps = {
   key: string;
   data: ItemData;
   e?: Event;
+  referenceRect?: {x:number,y:number,width:number,height:number};
 } & Record<string, any>;
 
 export type OverrideItemProps<T> = Omit<ItemProps, keyof T> & T & Pick<ITEMS_CONTEXT, "onSelect">;

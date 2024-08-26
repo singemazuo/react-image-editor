@@ -45,6 +45,7 @@ const ImageWidget: React.FC<ImageWidgetProps> = ({onCompleted}) => {
           updatedAt: Date.now(),
         },
         className: "sample-image",
+        refRect: null,
         children: [],
       });
     });
