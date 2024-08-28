@@ -482,6 +482,16 @@ function App() {
     [selectedItems, transformer.transformerRef.current],
   );
 
+  useHotkeys(
+    "delete",
+    (e) => {
+      e.preventDefault();
+      deleteItems(selectedItems, setSelectedItems, transformer.transformerRef);
+    },
+    { enabled: Boolean(selectedItems.length) },
+    [selectedItems, transformer.transformerRef.current],
+  );
+
   settingBarEvent.onEvent((rect) => {
     setSettingBarRect(rect);
   });
