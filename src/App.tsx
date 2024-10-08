@@ -179,6 +179,25 @@ function App() {
     createItem(data);
   };
 
+  const onTextCreate = () => {
+    createItem({
+      id: nanoid(),
+      attrs: {
+        "data-item-type": "text",
+        x: 0,
+        y: 0,
+        text: "Text",
+        fontSize: 20,
+        fontFamily: "Arial",
+        fill: "black",
+        draggable: true,
+        zIndex: stageData.length,
+      },
+      className: "Text",
+      children: [],
+    });
+  };
+
   const header = (
     <Header>
       <TabGroup
@@ -291,6 +310,7 @@ function App() {
       stageRef={stage.stageRef}
       onSubmenuClick={setActiveMenu}
       onImageUpload={onImageUpload}
+      onTextCreate={onTextCreate}
     />
   );
 
@@ -320,10 +340,11 @@ function App() {
       case "text":
         return (
           <TextItem
-            key={`image-${data.id}`}
+            key={`text-${data.id}`}
             data={data as TextItemProps["data"]}
             transformer={transformer}
             onSelect={onSelectItem}
+            referenceRect={printArea}
           />
         );
       case "shape":

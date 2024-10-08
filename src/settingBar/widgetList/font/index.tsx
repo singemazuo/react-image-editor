@@ -5,10 +5,14 @@ import FontColorWidget from "./FontColorWidget";
 import FontTransformWidget from "./FontTransformWidget";
 import TextEditWidget from "./TextEditWidget";
 
-const FontWidget: React.FC = () => {
+export type FontWidgetProps = {
+    createTextItem: () => void;
+};
+
+const FontWidget: React.FC<FontWidgetProps> = ({createTextItem}) => {
     return (
         <div>
-            <TextEditWidget></TextEditWidget>
+            <TextEditWidget createTextItem={createTextItem}></TextEditWidget>
             <hr className="m-0"></hr>
         </div>
     );

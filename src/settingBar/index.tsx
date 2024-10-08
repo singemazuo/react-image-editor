@@ -26,6 +26,7 @@ export type SettingBarProps = {
   stageRef: ReturnType<typeof useStage>["stageRef"];
   onSubmenuClick?: (menu: SubmenuType) => void;
   onImageUpload?: (data: StageData) => void;
+  onTextCreate: () => void;
 };
 
 export type SettingSideBarProps = {
@@ -38,7 +39,7 @@ const Widgets = {
   ),
   teamNames: (data: WidgetKind & SettingBarProps) => (<TeamNamesWidget />),
   clipart: (data: WidgetKind & SettingBarProps) => <ClipartWidget data-id="clipart" onClick={() => data.onSubmenuClick(SubmenuType.Clipart)}/>,
-  font: (data: WidgetKind & SettingBarProps) => <FontWidget />,
+  font: (data: WidgetKind & SettingBarProps) => <FontWidget createTextItem={data.onTextCreate}/>,
   align: (data: WidgetKind & SettingBarProps) => <AlignWidget data={data} />,
   image: (data: WidgetKind & SettingBarProps) => <ImageWidget onCompleted={data.onImageUpload}/>,
   frame: (data: WidgetKind & SettingBarProps) => <FrameWidget />,
